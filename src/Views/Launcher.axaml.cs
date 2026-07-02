@@ -199,19 +199,6 @@ namespace SourceGit.Views
                 return;
             }
 
-            // macOS: Cmd+Shift+O to open local repository, Windows/Linux: Ctrl+L to open local repository.
-            // It's because that Ctrl+Shift+O doesn't work on Windows/Linux(WSL). The e.Key is parsed as Key.ImeProcessed...
-            if ((isMacOS && e is { Key: Key.O, KeyModifiers: KeyModifiers.Meta | KeyModifiers.Shift }) ||
-                (!isMacOS && e is { Key: Key.L, KeyModifiers: KeyModifiers.Control }))
-            {
-                if (vm.ActivePage.Data is not ViewModels.Welcome)
-                    vm.AddNewTab();
-
-                ViewModels.Welcome.Instance.OpenLocalRepository();
-                e.Handled = true;
-                return;
-            }
-
             if (e.KeyModifiers.HasFlag(cmdKey))
             {
                 if (e.Key == Key.W)
@@ -221,12 +208,22 @@ namespace SourceGit.Views
                     return;
                 }
 
-                if (e.Key == Key.N)
+                if (e.Key == Key.R)
                 {
                     if (vm.ActivePage.Data is not ViewModels.Welcome)
                         vm.AddNewTab();
 
                     ViewModels.Welcome.Instance.Clone();
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.Key == Key.L)
+                {
+                    if (vm.ActivePage.Data is not ViewModels.Welcome)
+                        vm.AddNewTab();
+
+                    ViewModels.Welcome.Instance.OpenLocalRepository();
                     e.Handled = true;
                     return;
                 }
