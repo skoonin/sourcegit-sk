@@ -640,6 +640,8 @@ namespace SourceGit.Views
 
                 button.IsEnabled = false;
                 menu.Placement = PlacementMode.TopEdgeAlignedLeft;
+                menu.HorizontalOffset = -2;
+                menu.VerticalOffset = 1;
                 menu.Closed += (_, _) => button.IsEnabled = true;
                 menu.Open(button);
             }
