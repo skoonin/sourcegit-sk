@@ -46,6 +46,13 @@ namespace SourceGit.ViewModels
 
         public static async Task<ImageSource> FromRevisionAsync(string repo, string revision, string file, Models.ImageDecoder decoder)
         {
+            if (string.IsNullOrEmpty(revision))
+                return new ImageSource(null, 0);
+
+            var emptyTreeHash = Models.EmptyTreeHash.Guess(revision);
+            if (emptyTreeHash.Equals(revision, StringComparison.Ordinal))
+                return new ImageSource(null, 0);
+
             await using var stream = await Commands.QueryFileContent.RunAsync(repo, revision, file).ConfigureAwait(false);
             return await Task.Run(() => LoadFromStream(stream, decoder)).ConfigureAwait(false);
         }
