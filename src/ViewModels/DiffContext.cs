@@ -145,40 +145,17 @@ namespace SourceGit.ViewModels
                 _info = info;
 
                 object rs = null;
-                if (latest.TextDiff != null)
+                if (latest.TextDiff is { } textDiff)
                 {
-                    var count = latest.TextDiff.Lines.Count;
-                    var isSubmodule = false;
-                    if (count <= 3)
-                    {
-                        var submoduleDiff = new Models.SubmoduleDiff();
-                        var submoduleRoot = $"{_repo}/{_option.Path}".Replace('\\', '/').TrimEnd('/');
-                        isSubmodule = true;
-                        for (int i = 1; i < count; i++)
-                        {
-                            var line = latest.TextDiff.Lines[i];
-                            if (!line.Content.StartsWith("Subproject commit ", StringComparison.Ordinal))
-                            {
-                                isSubmodule = false;
-                                break;
-                            }
-
-                            var sha = line.Content.Substring(18);
-                            if (line.Type == Models.TextDiffLineType.Added)
-                                submoduleDiff.New = await QuerySubmoduleRevisionAsync(submoduleRoot, sha).ConfigureAwait(false);
-                            else if (line.Type == Models.TextDiffLineType.Deleted)
-                                submoduleDiff.Old = await QuerySubmoduleRevisionAsync(submoduleRoot, sha).ConfigureAwait(false);
-                        }
-
-                        if (isSubmodule)
-                        {
-                            submoduleDiff.FullPath = submoduleRoot;
-                            rs = submoduleDiff;
-                        }
-                    }
-
-                    if (!isSubmodule)
-                        rs = latest.TextDiff;
+                    rs = textDiff;
+                }
+                else if (latest.LFSDiff is { } lfs)
+                {
+                    var imgDecoder = ImageSource.GetDecoder(_option.Path);
+                    if (imgDecoder != Models.ImageDecoder.None)
+                        rs = new LFSImageDiff(_repo, lfs, imgDecoder);
+                    else
+                        rs = lfs;
                 }
                 else if (latest.IsBinary)
                 {
@@ -235,13 +212,23 @@ namespace SourceGit.ViewModels
                         rs = binaryDiff;
                     }
                 }
-                else if (latest.IsLFS)
+                else if (latest.IsSubmoduleChange)
                 {
-                    var imgDecoder = ImageSource.GetDecoder(_option.Path);
-                    if (imgDecoder != Models.ImageDecoder.None)
-                        rs = new LFSImageDiff(_repo, latest.LFSDiff, imgDecoder);
-                    else
-                        rs = latest.LFSDiff;
+                    var submoduleDiff = new Models.SubmoduleDiff();
+                    var submoduleRoot = $"{_repo}/{_option.Path}".Replace('\\', '/').TrimEnd('/');
+                    submoduleDiff.FullPath = submoduleRoot;
+
+                    if (IsValidSubmoduleHash(latest.OldHash))
+                        submoduleDiff.Old = await new Commands.QuerySubmoduleRevision(submoduleRoot, latest.OldHash)
+                            .GetResultAsync()
+                            .ConfigureAwait(false);
+
+                    if (IsValidSubmoduleHash(latest.NewHash))
+                        submoduleDiff.New = await new Commands.QuerySubmoduleRevision(submoduleRoot, latest.NewHash)
+                            .GetResultAsync()
+                            .ConfigureAwait(false);
+
+                    rs = submoduleDiff;
                 }
                 else if (IsEmptyFileHash(latest.OldHash) || IsEmptyFileHash(latest.NewHash))
                 {
@@ -277,29 +264,15 @@ namespace SourceGit.ViewModels
             });
         }
 
-        private async Task<Models.RevisionSubmodule> QuerySubmoduleRevisionAsync(string repo, string sha)
+        private bool IsValidSubmoduleHash(string hash)
         {
-            if (!File.Exists(Path.Combine(repo, ".git")))
-                return new Models.RevisionSubmodule() { Commit = new Models.Commit() { SHA = sha } };
-
-            var uncommittedChangesCount = 0;
-            if (sha.EndsWith("-dirty", StringComparison.Ordinal))
+            for (int i = 0; i < hash.Length; i++)
             {
-                sha = sha.Substring(0, sha.Length - 6);
-                uncommittedChangesCount = await new Commands.CountLocalChanges(repo, true).GetResultAsync().ConfigureAwait(false);
+                if (hash[i] != '0')
+                    return true;
             }
 
-            var commit = await new Commands.QuerySingleCommit(repo, sha).GetResultAsync().ConfigureAwait(false);
-            if (commit == null)
-                return new Models.RevisionSubmodule() { Commit = new Models.Commit() { SHA = sha } };
-
-            var body = await new Commands.QueryCommitFullMessage(repo, sha).GetResultAsync().ConfigureAwait(false);
-            return new Models.RevisionSubmodule()
-            {
-                Commit = commit,
-                FullMessage = new Models.CommitFullMessage { Message = body },
-                UncommittedChanges = uncommittedChangesCount
-            };
+            return false;
         }
 
         private bool IsEmptyFileHash(string hash)
