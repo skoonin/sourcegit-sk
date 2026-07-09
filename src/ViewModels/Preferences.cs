@@ -289,6 +289,12 @@ namespace SourceGit.ViewModels
             set => SetProperty(ref _useFullTextDiff, value);
         }
 
+        public bool UseContinuousDiff
+        {
+            get => _useContinuousDiff;
+            set => SetProperty(ref _useContinuousDiff, value);
+        }
+
         public int LFSImageActiveIdx
         {
             get => _lfsImageActiveIdx;
@@ -829,6 +835,7 @@ namespace SourceGit.ViewModels
         private bool _enableDiffViewWordWrap = false;
         private bool _showHiddenSymbolsInDiffView = false;
         private bool _useFullTextDiff = false;
+        private bool _useContinuousDiff = true;
         private int _lfsImageActiveIdx = 0;
         private int _imageDiffActiveIdx = 0;
         private bool _enableCompactFoldersInChangesTree = false;

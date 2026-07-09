@@ -10,6 +10,24 @@ namespace SourceGit.Views
 {
     public partial class DiffView : UserControl
     {
+        public static readonly StyledProperty<bool> ShowToolbarProperty =
+            AvaloniaProperty.Register<DiffView, bool>(nameof(ShowToolbar), true);
+
+        public bool ShowToolbar
+        {
+            get => GetValue(ShowToolbarProperty);
+            set => SetValue(ShowToolbarProperty, value);
+        }
+
+        public static readonly StyledProperty<bool> StackedProperty =
+            AvaloniaProperty.Register<DiffView, bool>(nameof(Stacked));
+
+        public bool Stacked
+        {
+            get => GetValue(StackedProperty);
+            set => SetValue(StackedProperty, value);
+        }
+
         public DiffView()
         {
             InitializeComponent();
@@ -43,7 +61,7 @@ namespace SourceGit.Views
             if (DataContext is ViewModels.DiffContext vm)
                 vm.CheckSettings();
 
-            ToggleHotkeyBindings(IsEffectivelyVisible);
+            ToggleHotkeyBindings(IsEffectivelyVisible && ShowToolbar);
         }
 
         private void OnGotoFirstChange(object _, RoutedEventArgs e)
