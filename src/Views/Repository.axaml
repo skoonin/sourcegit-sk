@@ -487,25 +487,26 @@
             </ListBox.ItemTemplate>
           </ListBox>
 
-          <!-- Recent Commits -->
-          <ToggleButton Grid.Row="10" Classes="group_expander" IsChecked="{Binding IsRecentCommitsGroupExpanded, Mode=TwoWay}">
+          <!-- Commits (full history, shares the Histories page's list and graph) -->
+          <ToggleButton Grid.Row="10" Classes="group_expander" IsChecked="{Binding IsCommitsGroupExpanded, Mode=TwoWay}">
             <Grid ColumnDefinitions="16,*">
               <Path Grid.Column="0" Width="11" Height="11" Margin="1,0,0,0" HorizontalAlignment="Left" Data="{StaticResource Icons.Histories}" Fill="{DynamicResource Brush.FG2}"/>
               <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <TextBlock Classes="group_header_label" Text="{DynamicResource Text.Repository.RecentCommits}"/>
-                <TextBlock Classes="group_header_label" Text="{Binding RecentCommits, Converter={x:Static c:ListConverters.ToCount}}" Margin="4,0,0,0"/>
+                <TextBlock Classes="group_header_label" Text="{DynamicResource Text.Repository.Commits}"/>
+                <TextBlock Classes="group_header_label" Text="{Binding Histories.Commits, Converter={x:Static c:ListConverters.ToCount}}" Margin="4,0,0,0"/>
               </StackPanel>
             </Grid>
           </ToggleButton>
           <ListBox Grid.Row="11"
-                   x:Name="RecentCommitsList"
+                   x:Name="SidebarCommitsList"
                    Height="0"
                    Margin="12,0,4,0"
                    Classes="repo_left_content_list two_line_rows"
-                   ItemsSource="{Binding RecentCommits, Mode=OneWay}"
+                   ItemsSource="{Binding Histories.Commits, Mode=OneWay}"
                    SelectionMode="Single"
-                   PropertyChanged="OnRecentCommitsListPropertyChanged"
-                   IsVisible="{Binding IsRecentCommitsGroupExpanded, Mode=OneWay}">
+                   PropertyChanged="OnSidebarCommitsListPropertyChanged"
+                   LayoutUpdated="OnSidebarCommitsListLayoutUpdated"
+                   IsVisible="{Binding IsCommitsGroupExpanded, Mode=OneWay}">
             <!-- Item height lives in Styles.axaml (two_line_rows): the base class's nested
                  ListBoxItem selector outranks a local override for Height. -->
             <ListBox.Styles>
@@ -515,17 +516,9 @@
             </ListBox.Styles>
             <ListBox.ItemTemplate>
               <DataTemplate DataType="m:Commit">
-                <Border Height="36" Background="Transparent" DoubleTapped="OnRecentCommitDoubleTapped">
-                  <Grid ColumnDefinitions="16,*" RowDefinitions="*,*">
-                    <!-- Commit dot on a continuous lane line (Sublime Merge style) -->
-                    <Rectangle Grid.Column="0" Grid.RowSpan="2" Width="2" HorizontalAlignment="Center" Fill="{DynamicResource Brush.Border1}"/>
-                    <Ellipse Grid.Column="0" Grid.Row="0" Width="9" Height="9" VerticalAlignment="Center"
-                             Fill="{DynamicResource Brush.Accent}"
-                             IsVisible="{Binding IsCurrentHead}"/>
-                    <Ellipse Grid.Column="0" Grid.Row="0" Width="7" Height="7" VerticalAlignment="Center"
-                             Fill="{DynamicResource Brush.FG2}"
-                             IsVisible="{Binding !IsCurrentHead}"/>
-
+                <Border Height="36" Background="Transparent" DoubleTapped="OnSidebarCommitDoubleTapped">
+                  <!-- First column is left empty; the CommitGraph control overlays it. -->
+                  <Grid ColumnDefinitions="40,*" RowDefinitions="*,*">
                     <Grid Grid.Column="1" Grid.Row="0" Margin="4,0,0,0" ColumnDefinitions="Auto,*">
                       <v:CommitRefsPresenter Grid.Column="0"
                                              Margin="0,0,4,0"
@@ -566,6 +559,16 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
+
+          <v:CommitGraph Grid.Row="11"
+                         x:Name="SidebarCommitsGraph"
+                         Margin="12,0,4,0"
+                         Graph="{Binding Histories.Graph}"
+                         DotBrush="{DynamicResource Brush.Contents}"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                         IsHitTestVisible="False"
+                         ClipToBounds="True"
+                         IsVisible="{Binding IsCommitsGroupExpanded, Mode=OneWay}"/>
         </Grid>
       </Grid>
 

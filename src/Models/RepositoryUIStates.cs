@@ -213,7 +213,7 @@ namespace SourceGit.Models
             set;
         } = false;
 
-        public bool IsRecentCommitsExpandedInSideBar
+        public bool IsCommitsExpandedInSideBar
         {
             get;
             set;
