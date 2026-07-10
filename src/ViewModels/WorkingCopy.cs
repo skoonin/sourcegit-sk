@@ -822,8 +822,12 @@ namespace SourceGit.ViewModels
                 return;
             }
 
-            var files = new List<(Models.Change, bool)>(changes.Count);
-            foreach (var c in changes)
+            // Selection order follows click order; keep the stack in list order.
+            var sorted = new List<Models.Change>(changes);
+            sorted.Sort((l, r) => Models.NumericSort.Compare(l.Path, r.Path));
+
+            var files = new List<(Models.Change, bool)>(sorted.Count);
+            foreach (var c in sorted)
                 files.Add((c, isUnstaged));
 
             DetailContext = new MultipleDiffContext(this, files, _detailContext as MultipleDiffContext);
