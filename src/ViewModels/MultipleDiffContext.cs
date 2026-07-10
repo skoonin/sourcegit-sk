@@ -166,6 +166,24 @@ namespace SourceGit.ViewModels
             }
         }
 
+        public void IncrUnified()
+        {
+            foreach (var file in Files)
+            {
+                if (file.Detail is DiffContext diff)
+                    diff.IncrUnified();
+            }
+        }
+
+        public void DecrUnified()
+        {
+            foreach (var file in Files)
+            {
+                if (file.Detail is DiffContext diff)
+                    diff.DecrUnified();
+            }
+        }
+
         public MultipleDiffContext(WorkingCopy owner, List<(Models.Change Change, bool IsUnstaged)> changes, MultipleDiffContext previous = null)
         {
             var count = Math.Min(changes.Count, MaxFiles);

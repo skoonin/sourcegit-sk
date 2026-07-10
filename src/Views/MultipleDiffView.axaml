@@ -22,6 +22,48 @@
                      Text="{Binding Files.Count, Converter={x:Static c:StringConverters.FormatByResourceKey}, ConverterParameter='Diff.FilesCount'}"/>
 
           <StackPanel Grid.Column="2" Margin="8,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Classes="icon_button"
+                    Width="28"
+                    Click="OnGotoFirstFile"
+                    ToolTip.Tip="{DynamicResource Text.Diff.FirstFile}">
+              <Path Width="12" Height="12" Stretch="Uniform" Margin="0,6,0,0" Data="{StaticResource Icons.Top}"/>
+            </Button>
+
+            <Button Classes="icon_button"
+                    Width="28"
+                    Click="OnGotoPrevFile"
+                    ToolTip.Tip="{DynamicResource Text.Diff.PrevFile}">
+              <Path Width="12" Height="12" Stretch="Uniform" Margin="0,6,0,0" Data="{StaticResource Icons.Up}"/>
+            </Button>
+
+            <Button Classes="icon_button"
+                    Width="28"
+                    Click="OnGotoNextFile"
+                    ToolTip.Tip="{DynamicResource Text.Diff.NextFile}">
+              <Path Width="12" Height="12" Stretch="Uniform" Margin="0,6,0,0" Data="{StaticResource Icons.Down}"/>
+            </Button>
+
+            <Button Classes="icon_button"
+                    Width="28"
+                    Click="OnGotoLastFile"
+                    ToolTip.Tip="{DynamicResource Text.Diff.LastFile}">
+              <Path Width="12" Height="12" Stretch="Uniform" Margin="0,6,0,0" Data="{StaticResource Icons.Bottom}"/>
+            </Button>
+
+            <Button Classes="icon_button"
+                    Width="28"
+                    Command="{Binding IncrUnified}"
+                    ToolTip.Tip="{DynamicResource Text.Diff.VisualLines.Incr}">
+              <Path Width="12" Height="12" Stretch="Uniform" Margin="0,6,0,0" Data="{StaticResource Icons.Lines.Incr}"/>
+            </Button>
+
+            <Button Classes="icon_button"
+                    Width="28"
+                    Command="{Binding DecrUnified}"
+                    ToolTip.Tip="{DynamicResource Text.Diff.VisualLines.Decr}">
+              <Path Width="12" Height="12" Stretch="Uniform" Margin="0,6,0,0" Data="{StaticResource Icons.Lines.Decr}"/>
+            </Button>
+
             <ToggleButton Classes="line_path"
                           Width="28"
                           Background="Transparent"
@@ -57,9 +99,9 @@
       </Border>
 
       <!-- Stacked diffs -->
-      <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+      <ScrollViewer x:Name="StackScroller" Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Orientation="Vertical">
-          <ItemsControl ItemsSource="{Binding Files}">
+          <ItemsControl x:Name="FilesList" ItemsSource="{Binding Files}">
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="vm:FileDiff">
                 <StackPanel Orientation="Vertical">
