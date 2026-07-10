@@ -131,12 +131,13 @@ namespace SourceGit.ViewModels
         // Full expansion above this line count would defeat AvaloniaEdit's viewport virtualization.
         internal const int MaxFullExpandLines = 500;
         internal const double BoundedBodyHeight = 600;
-        private const double NonTextBodyHeight = 400;
+        // Image/binary/submodule diffs have no line count; give them a fixed, readable pane height.
+        internal const double NonTextBodyHeight = 400;
 
         private readonly WorkingCopy _owner;
         private bool _isExpanded;
         private object _detail = null;
-        private bool _isBounded = false;
+        private bool _isBounded;
         private double _maxBodyHeight = BoundedBodyHeight;
     }
 
@@ -237,7 +238,9 @@ namespace SourceGit.ViewModels
             return isUnstaged ? $"U::{path}" : $"S::{path}";
         }
 
+        // Hard cap on stacked files; the surplus is surfaced via MoreCount ("and N more").
         private const int MaxFiles = 100;
+        // Above this, files start collapsed and expand lazily to avoid materializing many editors at once.
         private const int MaxAutoExpandFiles = 10;
     }
 }
