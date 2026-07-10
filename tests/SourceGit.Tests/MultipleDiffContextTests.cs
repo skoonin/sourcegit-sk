@@ -49,14 +49,20 @@ namespace SourceGit.Tests
             Assert.Equal(FileDiff.BoundedBodyHeight, decision.Value.MaxBodyHeight);
         }
 
-        [Fact]
-        public void TwoSideDiff_UsesLongerSide()
+        // The two-side view must bound on max(Old, New), not the total line count,
+        // so 501 one-sided lines trip the limit whichever side they land on.
+        [Theory]
+        [InlineData(TextDiffLineType.Deleted)]
+        [InlineData(TextDiffLineType.Added)]
+        public void TwoSideDiff_UsesLongerSide(TextDiffLineType lineType)
         {
-            // 501 deleted lines land on the old side only; the combined count would be the same
-            // but the two-side view must bound on max(Old, New), not the total.
             var textDiff = new TextDiff();
             for (var i = 0; i < FileDiff.MaxFullExpandLines + 1; i++)
-                textDiff.Lines.Add(new TextDiffLine(TextDiffLineType.Deleted, $"line {i}", [], i + 1, 0));
+            {
+                var oldLine = lineType == TextDiffLineType.Deleted ? i + 1 : 0;
+                var newLine = lineType == TextDiffLineType.Added ? i + 1 : 0;
+                textDiff.Lines.Add(new TextDiffLine(lineType, $"line {i}", [], oldLine, newLine));
+            }
 
             var diff = new TwoSideTextDiff(MakeOption(), textDiff);
 
@@ -144,18 +150,13 @@ namespace SourceGit.Tests
             var change = new Change { Path = "old.txt\tnew.txt" };
             change.Set(ChangeState.Renamed);
 
-            var ctx = new MultipleDiffContext(null, [(change, false), .. MakeChangeTuples(11, unstaged: false)]);
+            var ctx = new MultipleDiffContext(null, [(change, false), .. MakeChanges(11, unstaged: false)]);
 
             Assert.Equal("old.txt → new.txt", ctx.Files[0].Title);
         }
 
         // Above MaxAutoExpandFiles nothing expands, so a null owner is never dereferenced.
         private static List<(Change, bool)> MakeChanges(int count, bool unstaged)
-        {
-            return MakeChangeTuples(count, unstaged);
-        }
-
-        private static List<(Change, bool)> MakeChangeTuples(int count, bool unstaged)
         {
             var changes = new List<(Change, bool)>();
             for (var i = 0; i < count; i++)

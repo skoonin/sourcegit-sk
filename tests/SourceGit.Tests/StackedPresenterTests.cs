@@ -11,8 +11,9 @@ namespace SourceGit.Tests
 {
     public class StackedPresenterTests
     {
+        // Sanity check that the headless harness itself (fonts, styles, Skia) boots.
         [AvaloniaFact]
-        public void Harness_Renders_A_Window()
+        public void Headless_Harness_Boots()
         {
             var textBox = new TextBox();
             var window = new Window { Content = textBox, Width = 400, Height = 300 };
