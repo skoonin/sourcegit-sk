@@ -157,6 +157,15 @@ namespace SourceGit.ViewModels
             get => MoreCount > 0;
         }
 
+        public void CheckSettings()
+        {
+            foreach (var file in Files)
+            {
+                if (file.Detail is DiffContext diff)
+                    diff.CheckSettings();
+            }
+        }
+
         public MultipleDiffContext(WorkingCopy owner, List<(Models.Change Change, bool IsUnstaged)> changes, MultipleDiffContext previous = null)
         {
             var count = Math.Min(changes.Count, MaxFiles);

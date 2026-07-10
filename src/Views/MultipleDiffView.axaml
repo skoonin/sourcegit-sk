@@ -9,88 +9,137 @@
              x:Class="SourceGit.Views.MultipleDiffView"
              x:DataType="vm:MultipleDiffContext">
   <Border BorderThickness="1" BorderBrush="{DynamicResource Brush.Border2}" Background="{DynamicResource Brush.Window}">
-    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-      <StackPanel Orientation="Vertical">
-        <ItemsControl ItemsSource="{Binding Files}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="vm:FileDiff">
-              <StackPanel Orientation="Vertical">
-                <!-- Section headers (only when unstaged and staged changes are mixed) -->
-                <Border Height="24"
-                        Background="{DynamicResource Brush.Window}"
-                        BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}"
-                        IsVisible="{Binding ShowUnstagedGroupHeader}">
-                  <TextBlock Margin="8,0" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Brush.FG2}" Text="{DynamicResource Text.WorkingCopy.Unstaged}"/>
-                </Border>
+    <Grid RowDefinitions="Auto,*">
+      <!-- Toolbar -->
+      <Border Grid.Row="0" Height="26" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border2}">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Path Grid.Column="0" Width="12" Height="12" Data="{StaticResource Icons.Diff}" Margin="8,0,0,0"/>
 
-                <Border Height="24"
-                        Background="{DynamicResource Brush.Window}"
-                        BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}"
-                        IsVisible="{Binding ShowStagedGroupHeader}">
-                  <TextBlock Margin="8,0" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Brush.FG2}" Text="{DynamicResource Text.WorkingCopy.Staged}"/>
-                </Border>
-
-                <!-- File header -->
-                <Border Height="26"
-                        Background="{DynamicResource Brush.Window}"
-                        BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border2}"
-                        PointerPressed="OnFileHeaderPressed">
-                  <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                    <ToggleButton Grid.Column="0"
-                                  Classes="tree_expander"
-                                  Focusable="False"
-                                  IsHitTestVisible="False"
-                                  Margin="8,0,4,0"
-                                  IsChecked="{Binding IsExpanded, Mode=OneWay}"/>
-
-                    <v:ChangeStatusIcon Grid.Column="1"
-                                        Width="14" Height="14"
-                                        IsUnstagedChange="{Binding IsUnstaged}"
-                                        Change="{Binding Change}"/>
-
-                    <TextBlock Grid.Column="2"
-                               Margin="4,0,0,0"
-                               Text="{Binding Title}"
-                               ToolTip.Tip="{Binding Title}"
-                               FontSize="11"
-                               TextTrimming="CharacterEllipsis"/>
-
-                    <TextBlock Grid.Column="3"
-                               Margin="8,0"
-                               FontSize="11"
-                               Foreground="{DynamicResource Brush.FG2}"
-                               Text="{DynamicResource Text.Diff.LargeDiffHint}"
-                               IsVisible="{Binding IsBounded}"/>
-                  </Grid>
-                </Border>
-
-                <!-- Diff body -->
-                <ContentControl Content="{Binding Detail}"
-                                MaxHeight="{Binding MaxBodyHeight}"
-                                IsVisible="{Binding IsExpanded}">
-                  <ContentControl.DataTemplates>
-                    <DataTemplate DataType="vm:Conflict">
-                      <v:Conflict MinHeight="200"/>
-                    </DataTemplate>
-
-                    <DataTemplate DataType="vm:DiffContext">
-                      <v:DiffView ShowToolbar="False" Stacked="True"/>
-                    </DataTemplate>
-                  </ContentControl.DataTemplates>
-                </ContentControl>
-              </StackPanel>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <Border Height="26" IsVisible="{Binding HasMore}">
-          <TextBlock Margin="8,0"
-                     VerticalAlignment="Center"
+          <TextBlock Grid.Column="1"
+                     Margin="4,0,0,0"
                      FontSize="11"
-                     Foreground="{DynamicResource Brush.FG2}"
-                     Text="{Binding MoreCount, Converter={x:Static c:StringConverters.FormatByResourceKey}, ConverterParameter='Diff.AndMoreFiles'}"/>
-        </Border>
-      </StackPanel>
-    </ScrollViewer>
+                     TextTrimming="CharacterEllipsis"
+                     Text="{Binding Files.Count, Converter={x:Static c:StringConverters.FormatByResourceKey}, ConverterParameter='Diff.FilesCount'}"/>
+
+          <StackPanel Grid.Column="2" Margin="8,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+            <ToggleButton Classes="line_path"
+                          Width="28"
+                          Background="Transparent"
+                          IsChecked="{Binding Source={x:Static vm:Preferences.Instance}, Path=UseSyntaxHighlighting, Mode=TwoWay}"
+                          ToolTip.Tip="{DynamicResource Text.Diff.SyntaxHighlight}">
+              <Path Width="13" Height="13" Data="{StaticResource Icons.SyntaxHighlight}" Margin="0,3,0,0"/>
+            </ToggleButton>
+
+            <ToggleButton Classes="line_path"
+                          Width="28"
+                          IsChecked="{Binding Source={x:Static vm:Preferences.Instance}, Path=ShowHiddenSymbolsInDiffView, Mode=TwoWay}"
+                          ToolTip.Tip="{DynamicResource Text.Diff.ShowHiddenSymbols}">
+              <Path Width="11" Height="11" Stretch="Uniform" Data="{StaticResource Icons.HiddenSymbol}" Margin="0,1,0,0"/>
+            </ToggleButton>
+
+            <ToggleButton Classes="line_path"
+                          Width="28" Height="18"
+                          IsChecked="{Binding Source={x:Static vm:Preferences.Instance}, Path=UseSideBySideDiff, Mode=TwoWay}"
+                          ToolTip.Tip="{DynamicResource Text.Diff.SideBySide}"
+                          PropertyChanged="OnToggleButtonPropertyChanged">
+              <Path Width="12" Height="12" Data="{StaticResource Icons.Layout}" Margin="0,2,0,0"/>
+            </ToggleButton>
+
+            <ToggleButton Classes="line_path"
+                          Width="28"
+                          IsChecked="{Binding Source={x:Static vm:Preferences.Instance}, Path=IgnoreWhitespaceChangesInDiff, Mode=TwoWay}"
+                          ToolTip.Tip="{DynamicResource Text.Diff.IgnoreWhitespace}"
+                          PropertyChanged="OnToggleButtonPropertyChanged">
+              <Path Width="14" Height="14" Stretch="Uniform" Data="{StaticResource Icons.Whitespace}"/>
+            </ToggleButton>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Stacked diffs -->
+      <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Orientation="Vertical">
+          <ItemsControl ItemsSource="{Binding Files}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:FileDiff">
+                <StackPanel Orientation="Vertical">
+                  <!-- Section headers (only when unstaged and staged changes are mixed) -->
+                  <Border Height="24"
+                          Background="{DynamicResource Brush.Window}"
+                          BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}"
+                          IsVisible="{Binding ShowUnstagedGroupHeader}">
+                    <TextBlock Margin="8,0" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Brush.FG2}" Text="{DynamicResource Text.WorkingCopy.Unstaged}"/>
+                  </Border>
+
+                  <Border Height="24"
+                          Background="{DynamicResource Brush.Window}"
+                          BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border0}"
+                          IsVisible="{Binding ShowStagedGroupHeader}">
+                    <TextBlock Margin="8,0" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource Brush.FG2}" Text="{DynamicResource Text.WorkingCopy.Staged}"/>
+                  </Border>
+
+                  <!-- File header -->
+                  <Border Height="26"
+                          Background="{DynamicResource Brush.Window}"
+                          BorderThickness="0,0,0,1" BorderBrush="{DynamicResource Brush.Border2}"
+                          PointerPressed="OnFileHeaderPressed">
+                    <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                      <ToggleButton Grid.Column="0"
+                                    Classes="tree_expander"
+                                    Focusable="False"
+                                    IsHitTestVisible="False"
+                                    Margin="8,0,4,0"
+                                    IsChecked="{Binding IsExpanded, Mode=OneWay}"/>
+
+                      <v:ChangeStatusIcon Grid.Column="1"
+                                          Width="14" Height="14"
+                                          IsUnstagedChange="{Binding IsUnstaged}"
+                                          Change="{Binding Change}"/>
+
+                      <TextBlock Grid.Column="2"
+                                 Margin="4,0,0,0"
+                                 Text="{Binding Title}"
+                                 ToolTip.Tip="{Binding Title}"
+                                 FontSize="11"
+                                 TextTrimming="CharacterEllipsis"/>
+
+                      <TextBlock Grid.Column="3"
+                                 Margin="8,0"
+                                 FontSize="11"
+                                 Foreground="{DynamicResource Brush.FG2}"
+                                 Text="{DynamicResource Text.Diff.LargeDiffHint}"
+                                 IsVisible="{Binding IsBounded}"/>
+                    </Grid>
+                  </Border>
+
+                  <!-- Diff body -->
+                  <ContentControl Content="{Binding Detail}"
+                                  MaxHeight="{Binding MaxBodyHeight}"
+                                  IsVisible="{Binding IsExpanded}">
+                    <ContentControl.DataTemplates>
+                      <DataTemplate DataType="vm:Conflict">
+                        <v:Conflict MinHeight="200"/>
+                      </DataTemplate>
+
+                      <DataTemplate DataType="vm:DiffContext">
+                        <v:DiffView ShowToolbar="False" Stacked="True"/>
+                      </DataTemplate>
+                    </ContentControl.DataTemplates>
+                  </ContentControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Border Height="26" IsVisible="{Binding HasMore}">
+            <TextBlock Margin="8,0"
+                       VerticalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{DynamicResource Brush.FG2}"
+                       Text="{Binding MoreCount, Converter={x:Static c:StringConverters.FormatByResourceKey}, ConverterParameter='Diff.AndMoreFiles'}"/>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
   </Border>
 </UserControl>

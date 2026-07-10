@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace SourceGit.Views
@@ -8,6 +10,12 @@ namespace SourceGit.Views
         public MultipleDiffView()
         {
             InitializeComponent();
+        }
+
+        private void OnToggleButtonPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == ToggleButton.IsCheckedProperty && DataContext is ViewModels.MultipleDiffContext ctx)
+                ctx.CheckSettings();
         }
 
         private void OnFileHeaderPressed(object sender, PointerPressedEventArgs e)
