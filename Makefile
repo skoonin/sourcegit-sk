@@ -52,7 +52,14 @@ publish: ## Publish a Release build for RUNTIME (default osx-arm64) to build/Sou
 
 .PHONY: app
 app: publish ## Build SourceGit.app bundle and zip (build/sourcegit_<version>.<runtime>.zip)
+	rm -rf build/SourceGit.app build/*.zip
 	VERSION=$(VERSION) RUNTIME=$(RUNTIME) bash build/scripts/package.osx-app.sh
+
+.PHONY: install
+install: app ## Build and install SourceGit.app into /Applications (overwrites)
+	rm -rf /Applications/SourceGit.app
+	cp -R build/SourceGit.app /Applications/
+	@echo "Installed /Applications/SourceGit.app ($(VERSION), $(RUNTIME)). Restart the app to pick it up."
 
 ##@ Housekeeping
 
