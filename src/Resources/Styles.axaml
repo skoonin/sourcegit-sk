@@ -761,6 +761,11 @@
     </Style>
   </Style>
 
+  <!-- Two-line rows (e.g. the sidebar COMMITS list); the base class pins items at 24. -->
+  <Style Selector="ListBox.repo_left_content_list.two_line_rows ListBoxItem">
+    <Setter Property="Height" Value="36"/>
+  </Style>
+
   <Style Selector="ContextMenu">
     <Setter Property="MaxWidth" Value="1024"/>
     <Setter Property="HorizontalOffset" Value="-6"/>
