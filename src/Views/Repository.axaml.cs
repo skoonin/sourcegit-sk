@@ -172,6 +172,20 @@ namespace SourceGit.Views
                 UpdateLeftSidebarLayout();
         }
 
+        private void OnRecentCommitDoubleTapped(object sender, TappedEventArgs e)
+        {
+            if (sender is Control { DataContext: Models.Commit commit } && DataContext is ViewModels.Repository repo)
+                repo.NavigateToCommit(commit.SHA);
+
+            e.Handled = true;
+        }
+
+        private void OnRecentCommitsListPropertyChanged(object _, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == ItemsControl.ItemsSourceProperty || e.Property == IsVisibleProperty)
+                UpdateLeftSidebarLayout();
+        }
+
         private void OnLeftSidebarRowsChanged(object _, RoutedEventArgs e)
         {
             UpdateLeftSidebarLayout();
@@ -193,7 +207,7 @@ namespace SourceGit.Views
             if (!IsLoaded)
                 return;
 
-            var leftHeight = LeftSidebarGroups.Bounds.Height - 28.0 * 5 - 4;
+            var leftHeight = LeftSidebarGroups.Bounds.Height - 28.0 * 6 - 4;
             if (leftHeight <= 0)
                 return;
 
@@ -203,8 +217,27 @@ namespace SourceGit.Views
             var desiredTag = vm.IsTagGroupExpanded ? 24.0 * TagsList.Rows : 0;
             var desiredSubmodule = vm.IsSubmoduleGroupExpanded ? 24.0 * SubmoduleList.Rows : 0;
             var desiredWorktree = vm.IsWorktreeGroupExpanded ? 24.0 * vm.Worktrees.Count : 0;
-            var desiredOthers = desiredTag + desiredSubmodule + desiredWorktree;
+            // Recent-commit rows are two lines tall, unlike the 24px rows of the other groups.
+            var desiredRecent = vm.IsRecentCommitsGroupExpanded ? 36.0 * vm.RecentCommits.Count : 0;
+            var desiredOthers = desiredTag + desiredSubmodule + desiredWorktree + desiredRecent;
             var hasOverflow = (desiredBranches + desiredOthers > leftHeight);
+
+            if (vm.IsRecentCommitsGroupExpanded)
+            {
+                var height = desiredRecent;
+                if (hasOverflow)
+                {
+                    var test = leftHeight - desiredBranches - desiredTag - desiredSubmodule - desiredWorktree;
+                    if (test < 0)
+                        height = Math.Min(120, height);
+                    else
+                        height = Math.Max(120, test);
+                }
+
+                leftHeight -= height;
+                RecentCommitsList.Height = height;
+                hasOverflow = (desiredBranches + desiredTag + desiredSubmodule + desiredWorktree) > leftHeight;
+            }
 
             if (vm.IsWorktreeGroupExpanded)
             {

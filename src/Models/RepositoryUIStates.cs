@@ -213,6 +213,12 @@ namespace SourceGit.Models
             set;
         } = false;
 
+        public bool IsRecentCommitsExpandedInSideBar
+        {
+            get;
+            set;
+        } = false;
+
         public List<string> ExpandedBranchNodesInSideBar
         {
             get;
