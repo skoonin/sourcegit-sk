@@ -12,8 +12,9 @@
     <ContentControl Content="{Binding}">
       <ContentControl.DataTemplates>
         <DataTemplate DataType="vm:CombinedTextDiff">
-          <Grid ColumnDefinitions="*,1,12">
+          <Grid ColumnDefinitions="*,Auto,Auto">
             <v:CombinedTextDiffPresenter Grid.Column="0"
+                                         Stacked="{Binding $parent[v:TextDiffView].UseStacked}"
                                          FileName="{Binding Option.Path}"
                                          Foreground="{DynamicResource Brush.FG1}"
                                          LineBrush="{DynamicResource Brush.Border2}"
@@ -33,9 +34,11 @@
                                          SelectedChunk="{Binding SelectedChunk, Mode=TwoWay}"
                                          BlockNavigation="{Binding BlockNavigation, Mode=OneWay}"/>
 
-            <Rectangle Grid.Column="1" Fill="{DynamicResource Brush.Border2}" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Column="1" Fill="{DynamicResource Brush.Border2}" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" IsVisible="{Binding !$parent[v:TextDiffView].UseStacked}"/>
 
             <v:TextDiffViewMinimap Grid.Column="2"
+                                   Width="12"
+                                   IsVisible="{Binding !$parent[v:TextDiffView].UseStacked}"
                                    DisplayRange="{Binding DisplayRange, Mode=OneWay}"
                                    AddedLineBrush="{DynamicResource Brush.Diff.AddedBG}"
                                    DeletedLineBrush="{DynamicResource Brush.Diff.DeletedBG}"/>
@@ -48,12 +51,13 @@
               <ColumnDefinition Width="*" MinWidth="100"/>
               <ColumnDefinition Width="3"/>
               <ColumnDefinition Width="*" MinWidth="100"/>
-              <ColumnDefinition Width="1" MinWidth="1" MaxWidth="1"/>
-              <ColumnDefinition Width="12" MinWidth="12" MaxWidth="12"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            
+
             <v:SingleSideTextDiffPresenter Grid.Column="0"
                                            IsOld="True"
+                                           Stacked="{Binding $parent[v:TextDiffView].UseStacked}"
                                            FileName="{Binding Option.Path}"
                                            Foreground="{DynamicResource Brush.FG1}"
                                            LineBrush="{DynamicResource Brush.Border2}"
@@ -84,6 +88,7 @@
 
             <v:SingleSideTextDiffPresenter Grid.Column="2"
                                            IsOld="False"
+                                           Stacked="{Binding $parent[v:TextDiffView].UseStacked}"
                                            FileName="{Binding Option.Path}"
                                            Foreground="{DynamicResource Brush.FG1}"
                                            LineBrush="{DynamicResource Brush.Border2}"
@@ -103,9 +108,11 @@
                                            SelectedChunk="{Binding SelectedChunk, Mode=TwoWay}"
                                            BlockNavigation="{Binding BlockNavigation, Mode=OneWay}"/>
 
-            <Rectangle Grid.Column="3" Fill="{DynamicResource Brush.Border2}" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            <Rectangle Grid.Column="3" Fill="{DynamicResource Brush.Border2}" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" IsVisible="{Binding !$parent[v:TextDiffView].UseStacked}"/>
 
             <v:TextDiffViewMinimap Grid.Column="4"
+                                   Width="12"
+                                   IsVisible="{Binding !$parent[v:TextDiffView].UseStacked}"
                                    DisplayRange="{Binding DisplayRange, Mode=OneWay}"
                                    AddedLineBrush="{DynamicResource Brush.Diff.AddedBG}"
                                    DeletedLineBrush="{DynamicResource Brush.Diff.DeletedBG}"/>
