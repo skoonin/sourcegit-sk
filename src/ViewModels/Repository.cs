@@ -187,12 +187,6 @@ namespace SourceGit.ViewModels
             private set => SetProperty(ref _worktrees, value);
         }
 
-        public List<Models.Commit> RecentCommits
-        {
-            get => _recentCommits;
-            private set => SetProperty(ref _recentCommits, value);
-        }
-
         public List<Models.Tag> Tags
         {
             get => _tags;
@@ -362,14 +356,14 @@ namespace SourceGit.ViewModels
             }
         }
 
-        public bool IsRecentCommitsGroupExpanded
+        public bool IsCommitsGroupExpanded
         {
-            get => _uiStates.IsRecentCommitsExpandedInSideBar;
+            get => _uiStates.IsCommitsExpandedInSideBar;
             set
             {
-                if (value != _uiStates.IsRecentCommitsExpandedInSideBar)
+                if (value != _uiStates.IsCommitsExpandedInSideBar)
                 {
-                    _uiStates.IsRecentCommitsExpandedInSideBar = value;
+                    _uiStates.IsCommitsExpandedInSideBar = value;
                     OnPropertyChanged();
                 }
             }
@@ -1254,8 +1248,6 @@ namespace SourceGit.ViewModels
                     {
                         _histories.IsLoading = false;
                         _histories.Commits = commits;
-                        // Sidebar mirrors the graph, including active history filters.
-                        RecentCommits = BuildRecentCommits(commits);
                         BisectState = _histories.UpdateBisectInfo();
 
                         if (!string.IsNullOrEmpty(_navigateToCommitDelayed))
@@ -1958,16 +1950,7 @@ namespace SourceGit.ViewModels
         private Models.Branch _currentBranch = null;
         private List<BranchTreeNode> _localBranchTrees = [];
         private List<BranchTreeNode> _remoteBranchTrees = [];
-        // Sidebar block cap; the full history lives on the Histories page.
-        internal const int MaxRecentCommits = 20;
-
-        internal static List<Models.Commit> BuildRecentCommits(List<Models.Commit> commits)
-        {
-            return commits.Count > MaxRecentCommits ? commits.GetRange(0, MaxRecentCommits) : commits;
-        }
-
         private List<Worktree> _worktrees = [];
-        private List<Models.Commit> _recentCommits = [];
         private List<Models.Tag> _tags = [];
         private object _visibleTags = null;
         private List<Models.Submodule> _submodules = [];
