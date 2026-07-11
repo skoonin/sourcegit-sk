@@ -44,6 +44,11 @@ format-check: ## Verify code style without changing files (CI parity)
 .PHONY: check
 check: format-check build test ## Run all local gates: format, build, test
 
+.PHONY: loc-check
+loc-check: ## Sync TRANSLATION.md and sort locale files (CI parity; run after locale changes)
+	npm install --prefix build/scripts --no-save --silent fs-extra@11.2.0 xml2js@0.6.2
+	node build/scripts/localization-check.js
+
 ##@ Release
 
 .PHONY: publish
@@ -54,6 +59,16 @@ publish: ## Publish a Release build for RUNTIME (default osx-arm64) to build/Sou
 app: publish ## Build SourceGit.app bundle and zip (build/sourcegit_<version>.<runtime>.zip)
 	rm -rf build/SourceGit.app build/*.zip
 	VERSION=$(VERSION) RUNTIME=$(RUNTIME) bash build/scripts/package.osx-app.sh
+
+.PHONY: release
+release: ## Run checks, tag v<VERSION>, and build the release zip (tag stays local until pushed)
+	@test -z "$$(git status --porcelain)" || { echo "ERROR: working tree not clean; commit or stash first"; exit 1; }
+	@! git rev-parse -q --verify "refs/tags/v$(VERSION)" >/dev/null || { echo "ERROR: tag v$(VERSION) already exists; bump VERSION first"; exit 1; }
+	$(MAKE) check
+	git tag -a "v$(VERSION)" -m "Release $(VERSION)"
+	$(MAKE) app
+	@echo "Released v$(VERSION): build/sourcegit_$(VERSION).$(RUNTIME).zip"
+	@echo "To publish: git push origin master v$(VERSION); gh release create v$(VERSION) build/sourcegit_$(VERSION).$(RUNTIME).zip --title v$(VERSION) --notes 'Fork release $(VERSION)'"
 
 .PHONY: install
 install: app ## Build and install SourceGit.app into /Applications (overwrites)
