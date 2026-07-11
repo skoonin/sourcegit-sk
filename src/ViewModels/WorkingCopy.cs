@@ -180,7 +180,7 @@ namespace SourceGit.ViewModels
                         if (value.Count == 1)
                             SetDetail(value[0], true);
                         else
-                            SetDetail(null, true);
+                            SetMultiDetail(value, true);
                     }
                 }
             }
@@ -206,7 +206,7 @@ namespace SourceGit.ViewModels
                         if (value.Count == 1)
                             SetDetail(value[0], false);
                         else
-                            SetDetail(null, false);
+                            SetMultiDetail(value, false);
                     }
                 }
             }
@@ -724,12 +724,27 @@ namespace SourceGit.ViewModels
             return rs;
         }
 
+        public void RefreshDetail()
+        {
+            UpdateDetail();
+        }
+
         private void UpdateDetail()
         {
+            if (Preferences.Instance.UseContinuousDiff)
+            {
+                SetContinuousDetail();
+                return;
+            }
+
             if (_selectedUnstaged.Count == 1)
                 SetDetail(_selectedUnstaged[0], true);
+            else if (_selectedUnstaged.Count > 1)
+                SetMultiDetail(_selectedUnstaged, true);
             else if (_selectedStaged.Count == 1)
                 SetDetail(_selectedStaged[0], false);
+            else if (_selectedStaged.Count > 1)
+                SetMultiDetail(_selectedStaged, false);
             else
                 SetDetail(null, false);
         }
@@ -782,12 +797,60 @@ namespace SourceGit.ViewModels
             if (_isLoadingData)
                 return;
 
+            if (Preferences.Instance.UseContinuousDiff)
+            {
+                SetContinuousDetail();
+                return;
+            }
+
             if (change == null)
                 DetailContext = null;
             else if (change.IsConflicted)
                 DetailContext = new Conflict(_repo, this, change);
             else
                 DetailContext = new DiffContext(_repo.FullPath, new Models.DiffOption(change, isUnstaged), _detailContext as DiffContext);
+        }
+
+        private void SetMultiDetail(List<Models.Change> changes, bool isUnstaged)
+        {
+            if (_isLoadingData)
+                return;
+
+            if (Preferences.Instance.UseContinuousDiff)
+            {
+                SetContinuousDetail();
+                return;
+            }
+
+            // Selection order follows click order; keep the stack in list order.
+            var sorted = new List<Models.Change>(changes);
+            sorted.Sort((l, r) => Models.NumericSort.Compare(l.Path, r.Path));
+
+            var files = new List<(Models.Change, bool)>(sorted.Count);
+            foreach (var c in sorted)
+                files.Add((c, isUnstaged));
+
+            DetailContext = new MultipleDiffContext(this, files, _detailContext as MultipleDiffContext);
+        }
+
+        private void SetContinuousDetail()
+        {
+            if (_isLoadingData)
+                return;
+
+            var files = new List<(Models.Change, bool)>(_visibleUnstaged.Count + _visibleStaged.Count);
+            foreach (var c in _visibleUnstaged)
+                files.Add((c, true));
+            foreach (var c in _visibleStaged)
+                files.Add((c, false));
+
+            if (files.Count == 0)
+            {
+                DetailContext = null;
+                return;
+            }
+
+            DetailContext = new MultipleDiffContext(this, files, _detailContext as MultipleDiffContext);
         }
 
         private bool IsChanged(List<Models.Change> old, List<Models.Change> cur)

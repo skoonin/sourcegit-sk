@@ -10,6 +10,11 @@ namespace SourceGit.Views
 {
     public partial class Repository : UserControl
     {
+        // Sidebar commits list: two-line rows (height also pinned by the two_line_rows style)
+        // with the leading 40px overlaid by the commit graph (~3 lanes at 12px each).
+        private const double SidebarCommitRowHeight = 36.0;
+        private const double SidebarCommitsGraphWidth = 40.0;
+
         public Repository()
         {
             InitializeComponent();
@@ -172,6 +177,29 @@ namespace SourceGit.Views
                 UpdateLeftSidebarLayout();
         }
 
+        private void OnSidebarCommitDoubleTapped(object sender, TappedEventArgs e)
+        {
+            if (sender is Control { DataContext: Models.Commit commit } && DataContext is ViewModels.Repository repo)
+                repo.NavigateToCommit(commit.SHA);
+
+            e.Handled = true;
+        }
+
+        private void OnSidebarCommitsListPropertyChanged(object _, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == ItemsControl.ItemsSourceProperty || e.Property == IsVisibleProperty)
+                UpdateLeftSidebarLayout();
+        }
+
+        private void OnSidebarCommitsListLayoutUpdated(object _1, EventArgs _2)
+        {
+            if (!IsLoaded)
+                return;
+
+            var scroller = SidebarCommitsList.FindDescendantOfType<ScrollViewer>();
+            SidebarCommitsGraph.Layout = new Models.CommitGraphLayout(scroller?.Offset.Y ?? 0, SidebarCommitsGraphWidth, SidebarCommitRowHeight);
+        }
+
         private void OnLeftSidebarRowsChanged(object _, RoutedEventArgs e)
         {
             UpdateLeftSidebarLayout();
@@ -193,7 +221,7 @@ namespace SourceGit.Views
             if (!IsLoaded)
                 return;
 
-            var leftHeight = LeftSidebarGroups.Bounds.Height - 28.0 * 5 - 4;
+            var leftHeight = LeftSidebarGroups.Bounds.Height - 28.0 * 6 - 4;
             if (leftHeight <= 0)
                 return;
 
@@ -203,8 +231,27 @@ namespace SourceGit.Views
             var desiredTag = vm.IsTagGroupExpanded ? 24.0 * TagsList.Rows : 0;
             var desiredSubmodule = vm.IsSubmoduleGroupExpanded ? 24.0 * SubmoduleList.Rows : 0;
             var desiredWorktree = vm.IsWorktreeGroupExpanded ? 24.0 * vm.Worktrees.Count : 0;
-            var desiredOthers = desiredTag + desiredSubmodule + desiredWorktree;
+            // Sidebar commit rows are two lines tall, unlike the 24px rows of the other groups.
+            var desiredCommits = vm.IsCommitsGroupExpanded ? SidebarCommitRowHeight * vm.Histories.Commits.Count : 0;
+            var desiredOthers = desiredTag + desiredSubmodule + desiredWorktree + desiredCommits;
             var hasOverflow = (desiredBranches + desiredOthers > leftHeight);
+
+            if (vm.IsCommitsGroupExpanded)
+            {
+                var height = desiredCommits;
+                if (hasOverflow)
+                {
+                    var test = leftHeight - desiredBranches - desiredTag - desiredSubmodule - desiredWorktree;
+                    if (test < 0)
+                        height = Math.Min(120, height);
+                    else
+                        height = Math.Max(120, test);
+                }
+
+                leftHeight -= height;
+                SidebarCommitsList.Height = height;
+                hasOverflow = (desiredBranches + desiredTag + desiredSubmodule + desiredWorktree) > leftHeight;
+            }
 
             if (vm.IsWorktreeGroupExpanded)
             {

@@ -49,10 +49,11 @@ namespace SourceGit.ViewModels
             private set => SetProperty(ref _unifiedLines, value);
         }
 
-        public DiffContext(string repo, Models.DiffOption option, DiffContext previous = null)
+        public DiffContext(string repo, Models.DiffOption option, DiffContext previous = null, bool ignoreFullTextDiff = false)
         {
             _repo = repo;
             _option = option;
+            _ignoreFullTextDiff = ignoreFullTextDiff;
 
             if (previous != null)
             {
@@ -93,11 +94,12 @@ namespace SourceGit.ViewModels
         public void CheckSettings()
         {
             var pref = Preferences.Instance;
+            var useFullTextDiff = pref.UseFullTextDiff && !_ignoreFullTextDiff;
 
             if (Content is TextDiffContext ctx)
             {
-                if ((pref.UseFullTextDiff && _info.UnifiedLines != _entireFileLines) ||
-                    (!pref.UseFullTextDiff && _info.UnifiedLines == _entireFileLines) ||
+                if ((useFullTextDiff && _info.UnifiedLines != _entireFileLines) ||
+                    (!useFullTextDiff && _info.UnifiedLines == _entireFileLines) ||
                     (pref.IgnoreWhitespaceChangesInDiff != _info.IgnoreWhitespace))
                 {
                     LoadContent();
@@ -126,7 +128,7 @@ namespace SourceGit.ViewModels
             Task.Run(async () =>
             {
                 var pref = Preferences.Instance;
-                var numLines = pref.UseFullTextDiff ? _entireFileLines : _unifiedLines;
+                var numLines = pref.UseFullTextDiff && !_ignoreFullTextDiff ? _entireFileLines : _unifiedLines;
                 var ignoreWhitespace = pref.IgnoreWhitespaceChangesInDiff;
                 var ignoreCRAtEOL = pref.IgnoreCRAtEOLInDiff;
 
@@ -342,6 +344,7 @@ namespace SourceGit.ViewModels
         private readonly int _entireFileLines = 999999999;
         private readonly string _repo;
         private readonly Models.DiffOption _option = null;
+        private readonly bool _ignoreFullTextDiff = false;
         private int _oldMode = 0;
         private int _newMode = 0;
         private int _unifiedLines = 4;

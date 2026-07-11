@@ -509,6 +509,15 @@ namespace SourceGit.Views
             set => SetValue(TabWidthProperty, value);
         }
 
+        public static readonly StyledProperty<bool> StackedProperty =
+            AvaloniaProperty.Register<ThemedTextDiffPresenter, bool>(nameof(Stacked));
+
+        public bool Stacked
+        {
+            get => GetValue(StackedProperty);
+            set => SetValue(StackedProperty, value);
+        }
+
         protected override Type StyleKeyOverride => typeof(TextEditor);
 
         public ThemedTextDiffPresenter(TextArea area, TextDocument doc) : base(area, doc)
@@ -635,6 +644,29 @@ namespace SourceGit.Views
             {
                 TextArea?.TextView?.Redraw();
             }
+            else if (change.Property == StackedProperty || change.Property == WordWrapProperty)
+            {
+                // Word-wrap makes stacked item heights depend on width; force it off so the outer stack keeps a stable layout.
+                if (Stacked && WordWrap)
+                    SetCurrentValue(WordWrapProperty, false);
+            }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            var size = base.MeasureOverride(availableSize);
+
+            // In stacked mode expanded items must size to their whole document: the editor's ScrollViewer
+            // uses logical scrolling, so under an unconstrained measure it reports a near-zero desired
+            // height. The scroll extent is the true content height (incl. the 8px below-document pad).
+            if (Stacked && double.IsInfinity(availableSize.Height))
+            {
+                var extentHeight = ExtentHeight;
+                if (extentHeight > size.Height)
+                    return new Size(size.Width, extentHeight);
+            }
+
+            return size;
         }
 
         protected override void OnDataContextChanged(EventArgs e)
@@ -838,7 +870,9 @@ namespace SourceGit.Views
                 {
                     _textMate.Dispose();
                     _textMate = null;
-                    GC.Collect();
+
+                    if (!Stacked)
+                        GC.Collect();
 
                     TextArea.TextView.Redraw();
                 }
@@ -847,6 +881,10 @@ namespace SourceGit.Views
 
         private void AutoScrollToFirstChange()
         {
+            // The outer scroller owns navigation in stacked mode.
+            if (Stacked)
+                return;
+
             if (Bounds.Height < 0.1)
                 return;
 
@@ -1060,7 +1098,8 @@ namespace SourceGit.Views
                 Text = string.Empty;
             }
 
-            GC.Collect();
+            if (!Stacked)
+                GC.Collect();
         }
 
         protected override void UpdateSelectedChunk(double y)
@@ -1217,7 +1256,9 @@ namespace SourceGit.Views
             }
 
             base.OnUnloaded(e);
-            GC.Collect();
+
+            if (!Stacked)
+                GC.Collect();
         }
 
         protected override void OnDataContextChanged(EventArgs e)
@@ -1560,6 +1601,15 @@ namespace SourceGit.Views
         {
             get => _selectedChunk;
             set => SetAndRaise(SelectedChunkProperty, ref _selectedChunk, value);
+        }
+
+        public static readonly StyledProperty<bool> UseStackedProperty =
+            AvaloniaProperty.Register<TextDiffView, bool>(nameof(UseStacked));
+
+        public bool UseStacked
+        {
+            get => GetValue(UseStackedProperty);
+            set => SetValue(UseStackedProperty, value);
         }
 
         public TextDiffView()

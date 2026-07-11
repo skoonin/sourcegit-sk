@@ -356,6 +356,19 @@ namespace SourceGit.ViewModels
             }
         }
 
+        public bool IsCommitsGroupExpanded
+        {
+            get => _uiStates.IsCommitsExpandedInSideBar;
+            set
+            {
+                if (value != _uiStates.IsCommitsExpandedInSideBar)
+                {
+                    _uiStates.IsCommitsExpandedInSideBar = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         public bool IsSortingLocalBranchByName
         {
             get => _uiStates.LocalBranchSortMode == Models.BranchSortMode.Name;
