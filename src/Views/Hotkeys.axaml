@@ -55,10 +55,10 @@
           <TextBlock Grid.Row="2" Grid.Column="0" Classes="bold" Text="{OnPlatform Ctrl+W, macOS=⌘+W}" />
           <TextBlock Grid.Row="2" Grid.Column="1" Margin="16,0,0,0" Text="{DynamicResource Text.Hotkeys.Global.CloseTab}" />
 
-          <TextBlock Grid.Row="3" Grid.Column="0" Classes="bold" Text="{OnPlatform Ctrl+Shift+Tab, macOS=⌘+⌥+←}"/>
+          <TextBlock Grid.Row="3" Grid.Column="0" Classes="bold" Text="{OnPlatform 'Ctrl+Shift+Tab / Ctrl+Shift+[', macOS='⌘+⌥+← / ⌘+⇧+['}"/>
           <TextBlock Grid.Row="3" Grid.Column="1" Margin="16,0,0,0" Text="{DynamicResource Text.Hotkeys.Global.GotoPrevTab}" />
 
-          <TextBlock Grid.Row="4" Grid.Column="0" Classes="bold" Text="{OnPlatform Ctrl+Tab, macOS=⌘+⌥+→}"/>
+          <TextBlock Grid.Row="4" Grid.Column="0" Classes="bold" Text="{OnPlatform 'Ctrl+Tab / Ctrl+Shift+]', macOS='⌘+⌥+→ / ⌘+⇧+]'}"/>
           <TextBlock Grid.Row="4" Grid.Column="1" Margin="16,0,0,0" Text="{DynamicResource Text.Hotkeys.Global.GotoNextTab}" />
 
           <TextBlock Grid.Row="5" Grid.Column="0" Classes="bold" Text="{OnPlatform Ctrl+N, macOS=⌘+N}"/>
