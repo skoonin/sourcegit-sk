@@ -42,12 +42,11 @@ namespace SourceGit.Views
 
         private void OnVisitReleaseNotes(object _, RoutedEventArgs e)
         {
-            var ver = TxtVersion.Text ?? string.Empty;
-            var endOfTagIdx = ver.IndexOf('-');
-            if (endOfTagIdx > 0)
-                ver = ver.Substring(0, endOfTagIdx);
+            // Strip `git describe` suffixes (-3-abcdef12, -dirty) but keep the -sk release component.
+            var match = REG_RELEASE_TAG().Match(TxtVersion.Text ?? string.Empty);
+            if (match.Success)
+                Native.OS.OpenBrowser($"https://github.com/skoonin/sourcegit-sk/releases/tag/{match.Value}");
 
-            Native.OS.OpenBrowser($"https://github.com/sourcegit-scm/sourcegit/releases/tag/{ver}");
             e.Handled = true;
         }
 
@@ -65,5 +64,8 @@ namespace SourceGit.Views
 
         [GeneratedRegex(@"^v\d{4}\.\d{1,2}(?:\-sk(?:\.\d+)?)?(?:\-\d+\-[0-9a-f]{8})?(?:\-dirty)?$")]
         private static partial Regex REG_FRIENDLY_VERSION();
+
+        [GeneratedRegex(@"^v\d{4}\.\d{1,2}(?:\-sk(?:\.\d+)?)?")]
+        private static partial Regex REG_RELEASE_TAG();
     }
 }

@@ -25,7 +25,19 @@ namespace SourceGit.Models
         public string CurrentVersionStr => $"v{CurrentVersion.Major}.{CurrentVersion.Minor:D2}";
 
         [JsonIgnore]
-        public bool IsNewVersion => CurrentVersion.CompareTo(new System.Version(TagName.Substring(1))) < 0;
+        public bool IsNewVersion
+        {
+            get
+            {
+                // Fork tags look like v2026.15-sk; only the numeric part is comparable.
+                var tag = TagName.Substring(1);
+                var endOfNumeric = tag.IndexOf('-');
+                if (endOfNumeric > 0)
+                    tag = tag.Substring(0, endOfNumeric);
+
+                return System.Version.TryParse(tag, out var latest) && CurrentVersion.CompareTo(latest) < 0;
+            }
+        }
 
         [JsonIgnore]
         public string ReleaseDateStr => DateTimeFormat.Format(PublishedAt, true);
