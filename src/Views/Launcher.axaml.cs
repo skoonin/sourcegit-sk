@@ -236,6 +236,7 @@ namespace SourceGit.Views
                 }
 
                 if ((OperatingSystem.IsMacOS() && e.KeyModifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Right) ||
+                    (e.KeyModifiers.HasFlag(KeyModifiers.Shift) && e.Key == Key.OemCloseBrackets) ||
                     (!OperatingSystem.IsMacOS() && !e.KeyModifiers.HasFlag(KeyModifiers.Shift) && e.Key == Key.Tab))
                 {
                     vm.GotoNextTab();
@@ -244,6 +245,7 @@ namespace SourceGit.Views
                 }
 
                 if ((OperatingSystem.IsMacOS() && e.KeyModifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Left) ||
+                    (e.KeyModifiers.HasFlag(KeyModifiers.Shift) && e.Key == Key.OemOpenBrackets) ||
                     (!OperatingSystem.IsMacOS() && e.KeyModifiers.HasFlag(KeyModifiers.Shift) && e.Key == Key.Tab))
                 {
                     vm.GotoPrevTab();

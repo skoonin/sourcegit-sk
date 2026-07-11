@@ -528,11 +528,13 @@ namespace SourceGit
             {
                 try
                 {
-                    // Fetch latest release information.
+                    // Fetch latest release information from the fork, not upstream.
                     using var client = new HttpClient();
                     client.Timeout = TimeSpan.FromSeconds(5);
+                    // GitHub API rejects requests without a User-Agent.
+                    client.DefaultRequestHeaders.UserAgent.ParseAdd("SourceGit-SK");
 
-                    var data = await client.GetStringAsync("https://sourcegit-scm.github.io/data/version.json");
+                    var data = await client.GetStringAsync("https://api.github.com/repos/skoonin/sourcegit-sk/releases/latest");
                     var ver = JsonSerializer.Deserialize(data, JsonCodeGen.Default.Version);
                     if (ver == null)
                         return;
