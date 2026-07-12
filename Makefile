@@ -24,8 +24,13 @@ build: ## Build the app (Debug)
 	$(DOTNET) build $(APP_PROJECT)
 
 .PHONY: run
-run: ## Build and run the GUI app
+run: ## Run last built GUI app
 	$(DOTNET) run --project $(APP_PROJECT)
+
+.PHONY: run-build
+run-build: ## Build and run the app (Debug)
+	$(MAKE) build
+	$(MAKE) run
 
 .PHONY: build-dev
 build-dev: ## Build a dev .app for local testing and print its exact sha-stamped version
