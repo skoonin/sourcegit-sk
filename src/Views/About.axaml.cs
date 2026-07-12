@@ -62,7 +62,7 @@ namespace SourceGit.Views
             e.Handled = true;
         }
 
-        [GeneratedRegex(@"^v\d{4}\.\d{1,2}(?:\-sk(?:\.\d+)?)?(?:\-\d+\-[0-9a-f]{8})?(?:\-dirty)?$")]
+        [GeneratedRegex(@"^v\d{4}\.\d{1,2}(?:\-sk(?:\.\d+)?)?(?:\-dev)?(?:\-\d+\-[0-9a-f]{8})?(?:\-dirty)?$")]
         private static partial Regex REG_FRIENDLY_VERSION();
 
         [GeneratedRegex(@"^v\d{4}\.\d{1,2}(?:\-sk(?:\.\d+)?)?")]

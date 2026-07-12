@@ -27,6 +27,14 @@ build: ## Build the app (Debug)
 run: ## Build and run the GUI app
 	$(DOTNET) run --project $(APP_PROJECT)
 
+.PHONY: build-dev
+build-dev: ## Build a dev .app for local testing and print its exact sha-stamped version
+	@test -z "$$(git status --porcelain)" || echo "WARNING: uncommitted changes -> version will show -dirty instead of a clean commit sha; commit first for an unambiguous build"
+	$(MAKE) app
+	@# Version composition is canonical in src/SourceGit.csproj (GenVersionInfo); mirrored here for the summary line.
+	@tail=$$(git describe --abbrev=8 --dirty 2>/dev/null | sed -E 's/^v[0-9]{4}\.[0-9]+(-sk(\.[0-9]+)?)?//' | tr -d g); \
+	 echo "Dev build ready: build/SourceGit.app  (version v$(VERSION)$$tail)"
+
 .PHONY: test
 test: ## Run the test suite
 	$(DOTNET) test $(TEST_PROJECT)
