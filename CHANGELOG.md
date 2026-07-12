@@ -2,6 +2,12 @@
 
 Fork releases of SourceGit-SK. Upstream changes arrive through upstream release merges and are documented in the [upstream release notes](https://github.com/sourcegit-scm/sourcegit/releases).
 
+## [Unreleased]
+
+### Changed
+
+- Local-changes diff view is now selection-driven: selecting a single file shows just that file, selecting several stacks those files, and the continuous stacked view of all changes appears when nothing is selected. The continuous-diff toggle has been removed.
+
 ## [2026.15-sk] - 2026-07-11
 
 First fork release, based on upstream [v2026.14](https://github.com/sourcegit-scm/sourcegit/releases/tag/v2026.14).

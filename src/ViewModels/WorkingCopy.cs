@@ -724,19 +724,8 @@ namespace SourceGit.ViewModels
             return rs;
         }
 
-        public void RefreshDetail()
-        {
-            UpdateDetail();
-        }
-
         private void UpdateDetail()
         {
-            if (Preferences.Instance.UseContinuousDiff)
-            {
-                SetContinuousDetail();
-                return;
-            }
-
             if (_selectedUnstaged.Count == 1)
                 SetDetail(_selectedUnstaged[0], true);
             else if (_selectedUnstaged.Count > 1)
@@ -797,14 +786,10 @@ namespace SourceGit.ViewModels
             if (_isLoadingData)
                 return;
 
-            if (Preferences.Instance.UseContinuousDiff)
-            {
-                SetContinuousDetail();
-                return;
-            }
-
+            // A single selected file always shows its own diff. Continuous stacking is reserved
+            // for the whole-changeset overview shown when nothing specific is selected.
             if (change == null)
-                DetailContext = null;
+                SetContinuousDetail();
             else if (change.IsConflicted)
                 DetailContext = new Conflict(_repo, this, change);
             else
@@ -815,12 +800,6 @@ namespace SourceGit.ViewModels
         {
             if (_isLoadingData)
                 return;
-
-            if (Preferences.Instance.UseContinuousDiff)
-            {
-                SetContinuousDetail();
-                return;
-            }
 
             // Selection order follows click order; keep the stack in list order.
             var sorted = new List<Models.Change>(changes);

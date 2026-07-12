@@ -30,14 +30,6 @@ namespace SourceGit.Views
                 layout.WorkingCopyLeftWidth = new GridLength(maxLeft, GridUnitType.Pixel);
         }
 
-        private void OnToggleContinuousDiff(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is ViewModels.WorkingCopy vm)
-                vm.RefreshDetail();
-
-            e.Handled = true;
-        }
-
         private async void OnOpenAssumeUnchanged(object sender, RoutedEventArgs e)
         {
             var repoView = this.FindAncestorOfType<Repository>();
