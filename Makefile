@@ -79,7 +79,7 @@ release: ## Run checks, tag v<VERSION>, and build the release zip (tag stays loc
 	@echo "To publish: git push origin master v$(VERSION); gh release create v$(VERSION) build/sourcegit_$(VERSION).$(RUNTIME).zip --title v$(VERSION) --notes 'Fork release $(VERSION)'"
 
 .PHONY: install
-install: app ## Build and install SourceGit.app into /Applications (overwrites)
+install: ## Install built SourceGit.app into /Applications (overwrites)
 	rm -rf /Applications/SourceGit.app
 	cp -R build/SourceGit.app /Applications/
 	@echo "Installed /Applications/SourceGit.app ($(VERSION), $(RUNTIME)). Restart the app to pick it up."
