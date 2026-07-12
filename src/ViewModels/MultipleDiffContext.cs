@@ -5,6 +5,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace SourceGit.ViewModels
 {
+    // Builds the detail view-model (DiffContext, Conflict, ...) for one change in a stacked diff.
+    // This is the only per-source variation point: each consumer (working copy, commit, compare,
+    // stash) supplies how a single file's diff is constructed; everything else is shared.
+    public delegate object FileDiffDetailFactory(Models.Change change, bool isUnstaged, DiffContext previous);
+
     public class FileDiff : ObservableObject
     {
         public Models.Change Change
@@ -61,9 +66,9 @@ namespace SourceGit.ViewModels
             private set => SetProperty(ref _maxBodyHeight, value);
         }
 
-        public FileDiff(WorkingCopy owner, Models.Change change, bool isUnstaged, bool autoExpand, FileDiff previous)
+        public FileDiff(FileDiffDetailFactory createDetail, Models.Change change, bool isUnstaged, bool autoExpand, FileDiff previous)
         {
-            _owner = owner;
+            _createDetail = createDetail;
             Change = change;
             IsUnstaged = isUnstaged;
 
@@ -79,18 +84,18 @@ namespace SourceGit.ViewModels
 
         private void CreateDetail(DiffContext previous)
         {
-            if (Change.IsConflicted)
+            var detail = _createDetail(Change, IsUnstaged, previous);
+            if (detail is DiffContext diff)
             {
-                _detail = new Conflict(_owner.Repository, _owner, Change);
-                MaxBodyHeight = double.PositiveInfinity;
-            }
-            else
-            {
-                // Ignore the global `UseFullTextDiff` preference so one toggle cannot materialize every stacked file.
-                var diff = new DiffContext(_owner.Repository.FullPath, new Models.DiffOption(Change, IsUnstaged), previous, true);
                 diff.PropertyChanged += OnDiffPropertyChanged;
                 _detail = diff;
                 UpdateBodyHeight(diff);
+            }
+            else
+            {
+                // Non-text details (conflict editor, ...) manage their own height.
+                _detail = detail;
+                MaxBodyHeight = double.PositiveInfinity;
             }
 
             OnPropertyChanged(nameof(Detail));
@@ -134,7 +139,7 @@ namespace SourceGit.ViewModels
         // Image/binary/submodule diffs have no line count; give them a fixed, readable pane height.
         internal const double NonTextBodyHeight = 400;
 
-        private readonly WorkingCopy _owner;
+        private readonly FileDiffDetailFactory _createDetail;
         private bool _isExpanded;
         private object _detail = null;
         private bool _isBounded;
@@ -185,7 +190,47 @@ namespace SourceGit.ViewModels
             }
         }
 
-        public MultipleDiffContext(WorkingCopy owner, List<(Models.Change Change, bool IsUnstaged)> changes, MultipleDiffContext previous = null)
+        // Shared selection-to-detail dispatch for read-only change sets (commits, compares, stashes):
+        // one selected file shows its own diff, several show a stacked diff of the selection, and no
+        // selection shows the whole visible set stacked. Consumers supply only how a change maps to a
+        // DiffOption. The working copy keeps its own dispatcher (dual staged/unstaged lists, conflicts).
+        public static object BuildDetail(string repoPath, Func<Models.Change, Models.DiffOption> makeOption, List<Models.Change> selected, List<Models.Change> visible, object previous)
+        {
+            // A lone selected file honors the global `UseFullTextDiff` preference; stacked files must
+            // ignore it so one toggle cannot materialize every file at once.
+            if (selected is { Count: 1 })
+                return new DiffContext(repoPath, makeOption(selected[0]), previous as DiffContext);
+
+            FileDiffDetailFactory factory = (change, _, prev) => new DiffContext(repoPath, makeOption(change), prev, true);
+
+            if (selected is { Count: > 1 })
+                return CreateFromSelection(factory, selected, previous);
+
+            if (visible is { Count: > 0 })
+                return CreateFromOrdered(factory, visible, previous);
+
+            return null;
+        }
+
+        // Stack an explicit selection; click order is normalized back to list order.
+        public static MultipleDiffContext CreateFromSelection(FileDiffDetailFactory createDetail, List<Models.Change> changes, object previous)
+        {
+            var sorted = new List<Models.Change>(changes);
+            sorted.Sort((l, r) => Models.NumericSort.Compare(l.Path, r.Path));
+            return CreateFromOrdered(createDetail, sorted, previous);
+        }
+
+        // Stack a list that is already in display order (e.g. the whole visible change set).
+        public static MultipleDiffContext CreateFromOrdered(FileDiffDetailFactory createDetail, List<Models.Change> changes, object previous)
+        {
+            var files = new List<(Models.Change, bool)>(changes.Count);
+            foreach (var c in changes)
+                files.Add((c, false));
+
+            return new MultipleDiffContext(createDetail, files, previous as MultipleDiffContext);
+        }
+
+        public MultipleDiffContext(FileDiffDetailFactory createDetail, List<(Models.Change Change, bool IsUnstaged)> changes, MultipleDiffContext previous = null)
         {
             var count = Math.Min(changes.Count, MaxFiles);
             MoreCount = changes.Count - count;
@@ -208,7 +253,7 @@ namespace SourceGit.ViewModels
                 FileDiff prev = null;
                 prevFiles?.TryGetValue(GetKey(change.Path, isUnstaged), out prev);
 
-                Files.Add(new FileDiff(owner, change, isUnstaged, autoExpand, prev));
+                Files.Add(new FileDiff(createDetail, change, isUnstaged, autoExpand, prev));
                 hasUnstaged |= isUnstaged;
                 hasStaged |= !isUnstaged;
             }
