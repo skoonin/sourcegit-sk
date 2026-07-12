@@ -6,8 +6,8 @@ Fork releases of SourceGit-SK. Upstream changes arrive through upstream release 
 
 ### Added
 
-- The stacked multi-file diff now covers every change view: commit details (History), compare, revision compare, submodule compare, and stashes all show the whole change set as one scrollable diff when no file is selected, stack a multi-selection, and show a single file when one is selected.
-- "Open Another Repository..." entry at the bottom of the repository switcher (Ctrl/Cmd+P) opens a folder picker to open a repo not yet in the list.
+- The stacked multi-file diff now covers every change view: commit details (History), compare, revision compare, submodule compare, and stashes all show the whole change set as one scrollable diff when no file is selected, stack a multi-selection, and show a single file when one is selected ([#8](https://github.com/skoonin/sourcegit-sk/pull/8))
+- "Open Another Repository..." entry at the bottom of the repository switcher (Ctrl/Cmd+P) opens a folder picker to open a repo not yet in the list ([#8](https://github.com/skoonin/sourcegit-sk/pull/8))
 
 ### Changed
 
@@ -15,7 +15,7 @@ Fork releases of SourceGit-SK. Upstream changes arrive through upstream release 
 
 ### Fixed
 
-- Clicking blank space below a file list clears the selection (returning the diff panel to the whole-changeset view).
+- Clicking blank space below a file list clears the selection (returning the diff panel to the whole-changeset view) ([#8](https://github.com/skoonin/sourcegit-sk/pull/8))
 
 ## [2026.15-sk] - 2026-07-11
 
