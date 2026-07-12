@@ -152,7 +152,7 @@
         </ItemsPanelTemplate>
       </ListBox.ItemsPanel>
 
-      <ListBox.ItemTemplate>
+      <v:ListBoxEx.DataTemplates>
         <DataTemplate DataType="vm:RepositoryNode">
           <Grid ColumnDefinitions="Auto,*" Background="Transparent" Tapped="OnItemTapped" ToolTip.Tip="{Binding Id, Mode=OneWay}">
             <v:Bookmark Grid.Column="0"
@@ -167,7 +167,22 @@
             </TextBlock>
           </Grid>
         </DataTemplate>
-      </ListBox.ItemTemplate>
+
+        <DataTemplate DataType="vm:OpenOtherRepositoryAction">
+          <Grid ColumnDefinitions="Auto,*" Background="Transparent" Tapped="OnItemTapped">
+            <Path Grid.Column="0"
+                  Width="12" Height="12"
+                  Fill="{DynamicResource Brush.FG1}"
+                  Data="{StaticResource Icons.Folder.Open}"
+                  IsHitTestVisible="False"/>
+            <TextBlock Grid.Column="1"
+                       Margin="6,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="{DynamicResource Text.Launcher.OpenOtherRepository}"
+                       IsHitTestVisible="False"/>
+          </Grid>
+        </DataTemplate>
+      </v:ListBoxEx.DataTemplates>
     </v:ListBoxEx>
   </Grid>
 </UserControl>

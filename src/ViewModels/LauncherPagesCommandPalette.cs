@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace SourceGit.ViewModels
 {
+    // Sentinel row rendered at the end of the repository list; activating it browses for a repo not yet known.
+    public sealed class OpenOtherRepositoryAction { }
+
     public class LauncherPagesCommandPalette : ICommandPalette
     {
         public List<LauncherPage> VisiblePages
@@ -11,7 +14,8 @@ namespace SourceGit.ViewModels
             private set => SetProperty(ref _visiblePages, value);
         }
 
-        public List<RepositoryNode> VisibleRepos
+        // Repository nodes plus a trailing OpenOtherRepositoryAction sentinel.
+        public List<object> VisibleRepos
         {
             get => _visibleRepos;
             private set => SetProperty(ref _visibleRepos, value);
@@ -37,7 +41,7 @@ namespace SourceGit.ViewModels
             }
         }
 
-        public RepositoryNode SelectedRepo
+        public object SelectedRepo
         {
             get => _selectedRepo;
             set
@@ -74,8 +78,18 @@ namespace SourceGit.ViewModels
 
             if (_selectedPage != null)
                 _launcher.ActivePage = _selectedPage;
-            else if (_selectedRepo != null)
-                _launcher.OpenRepositoryInTab(_selectedRepo, null);
+            else if (_selectedRepo is RepositoryNode repo)
+                _launcher.OpenRepositoryInTab(repo, null);
+        }
+
+        public void OpenPath(string path)
+        {
+            _opened.Clear();
+            _visiblePages.Clear();
+            _visibleRepos.Clear();
+            Close();
+
+            _launcher.TryOpenRepositoryFromPath(path);
         }
 
         private void UpdateVisible()
@@ -83,8 +97,13 @@ namespace SourceGit.ViewModels
             var pages = new List<LauncherPage>();
             CollectVisiblePages(pages);
 
-            var repos = new List<RepositoryNode>();
-            CollectVisibleRepository(repos, Preferences.Instance.RepositoryNodes);
+            var repoNodes = new List<RepositoryNode>();
+            CollectVisibleRepository(repoNodes, Preferences.Instance.RepositoryNodes);
+
+            // The browse action always trails the repo list so it stays reachable, even while filtering.
+            var repos = new List<object>(repoNodes.Count + 1);
+            repos.AddRange(repoNodes);
+            repos.Add(_browseAction);
 
             var autoSelectPage = _selectedPage;
             var autoSelectRepo = _selectedRepo;
@@ -187,10 +206,11 @@ namespace SourceGit.ViewModels
 
         private Launcher _launcher = null;
         private HashSet<string> _opened = new HashSet<string>();
+        private readonly OpenOtherRepositoryAction _browseAction = new();
         private List<LauncherPage> _visiblePages = [];
-        private List<RepositoryNode> _visibleRepos = [];
+        private List<object> _visibleRepos = [];
         private string _searchFilter = string.Empty;
         private LauncherPage _selectedPage = null;
-        private RepositoryNode _selectedRepo = null;
+        private object _selectedRepo = null;
     }
 }
