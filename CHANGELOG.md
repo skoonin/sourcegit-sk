@@ -2,7 +2,7 @@
 
 Fork releases of SourceGit-SK. Upstream changes arrive through upstream release merges and are documented in the [upstream release notes](https://github.com/sourcegit-scm/sourcegit/releases).
 
-## [Unreleased]
+## [2026.16-sk] - 2026-07-12
 
 ### Added
 
@@ -32,4 +32,5 @@ First fork release, based on upstream [v2026.14](https://github.com/sourcegit-sc
 - Version numbers carry an `-sk` suffix (shown in the About dialog) to distinguish fork releases from upstream builds.
 - The update check and release links point at this fork's releases instead of upstream's, so new `-sk` releases are detected and offered ([#2](https://github.com/skoonin/sourcegit-sk/pull/2))
 
+[2026.16-sk]: https://github.com/skoonin/sourcegit-sk/releases/tag/v2026.16-sk
 [2026.15-sk]: https://github.com/skoonin/sourcegit-sk/releases/tag/v2026.15-sk
