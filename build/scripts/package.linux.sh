@@ -82,5 +82,7 @@ sed -i -e "s/^Version:.*/Version: $VERSION/" \
 # Build deb package with gzip compression
 dpkg-deb -Zgzip --root-owner-group --build resources/deb "sourcegit_$VERSION-1_$arch.deb"
 
-rpmbuild -bb --target="$target" resources/rpm/SPECS/build.spec --define "_topdir $(pwd)/resources/rpm" --define "_version $VERSION"
-mv "resources/rpm/RPMS/$target/sourcegit-$VERSION-1.$target.rpm" ./
+# RPM forbids '-' in Version (reserved for the Release separator); the fork's -sk/-sk-dev suffix must use dots.
+rpm_version=${VERSION//-/.}
+rpmbuild -bb --target="$target" resources/rpm/SPECS/build.spec --define "_topdir $(pwd)/resources/rpm" --define "_version $rpm_version"
+mv "resources/rpm/RPMS/$target/sourcegit-$rpm_version-1.$target.rpm" ./
