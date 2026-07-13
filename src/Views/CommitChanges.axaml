@@ -83,10 +83,14 @@
         </StackPanel>
       </Border>
 
-      <ContentControl Content="{Binding DiffContext}">
+      <ContentControl Content="{Binding DetailContext}">
         <ContentControl.DataTemplates>
           <DataTemplate DataType="vm:DiffContext">
             <v:DiffView/>
+          </DataTemplate>
+
+          <DataTemplate DataType="vm:MultipleDiffContext">
+            <v:MultipleDiffView/>
           </DataTemplate>
         </ContentControl.DataTemplates>
       </ContentControl>

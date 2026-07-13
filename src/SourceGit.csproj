@@ -75,8 +75,19 @@
 
   <Target BeforeTargets="GetAssemblyAttributes" Name="GenVersionInfo">
     <Exec Command="git describe --abbrev=8 --dirty" ConsoleToMsBuild="True" IgnoreExitCode="true">
-      <Output PropertyName="FriendlyVersion" TaskParameter="ConsoleOutput"/>
+      <Output PropertyName="GitDescribe" TaskParameter="ConsoleOutput"/>
     </Exec>
+
+    <!-- The VERSION file supplies the base (so develop builds show the upcoming -dev version rather
+         than the last release tag); git describe supplies the tail (-<commits>-<sha> and/or -dirty)
+         so a dev build still identifies its exact commit. On a clean release tag the tail is empty. -->
+    <PropertyGroup>
+      <VersionBase>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)\\..\\VERSION"))</VersionBase>
+      <VersionBase>$(VersionBase.Trim())</VersionBase>
+      <GitDescribe>$(GitDescribe.Trim())</GitDescribe>
+      <VersionTail Condition="'$(GitDescribe)' != ''">$([System.Text.RegularExpressions.Regex]::Replace('$(GitDescribe)', '^v\d{4}\.\d{1,2}(-sk(\.\d+)?)?', ''))</VersionTail>
+      <FriendlyVersion>v$(VersionBase)$(VersionTail)</FriendlyVersion>
+    </PropertyGroup>
 
     <ItemGroup>
       <AssemblyMetadata Include="FriendlyVersion" Value="$([System.String]::Copy('$(FriendlyVersion)').Replace('g', '').Trim())"/>

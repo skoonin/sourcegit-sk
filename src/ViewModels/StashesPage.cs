@@ -93,7 +93,10 @@ namespace SourceGit.ViewModels
             private set
             {
                 if (SetProperty(ref _changes, value))
-                    SelectedChanges = value is { Count: > 0 } ? [value[0]] : [];
+                {
+                    // No auto-selected file: an empty selection shows the whole stash as a stacked diff.
+                    SelectedChanges = [];
+                }
             }
         }
 
@@ -103,26 +106,32 @@ namespace SourceGit.ViewModels
             set
             {
                 if (SetProperty(ref _selectedChanges, value))
-                {
-                    if (value is not { Count: 1 })
-                        DiffContext = null;
-                    else if (_untracked.Contains(value[0]))
-                        DiffContext = new DiffContext(_repo.FullPath, new Models.DiffOption(_selectedStash.UntrackedParent, _selectedStash.Parents[2], value[0]), _diffContext);
-                    else
-                        DiffContext = new DiffContext(_repo.FullPath, new Models.DiffOption(_selectedStash.Parents[0], _selectedStash.SHA, value[0]), _diffContext);
-                }
+                    UpdateDetail();
             }
         }
 
-        public DiffContext DiffContext
+        public object DetailContext
         {
-            get => _diffContext;
-            private set => SetProperty(ref _diffContext, value);
+            get => _detailContext;
+            private set => SetProperty(ref _detailContext, value);
         }
 
         public StashesPage(Repository repo)
         {
             _repo = repo;
+        }
+
+        private void UpdateDetail()
+        {
+            DetailContext = MultipleDiffContext.BuildDetail(_repo.FullPath, MakeDiffOption, _selectedChanges, _changes, _detailContext);
+        }
+
+        private Models.DiffOption MakeDiffOption(Models.Change change)
+        {
+            // Untracked files live on the third parent of the stash commit.
+            return _untracked.Contains(change)
+                ? new Models.DiffOption(_selectedStash.UntrackedParent, _selectedStash.Parents[2], change)
+                : new Models.DiffOption(_selectedStash.Parents[0], _selectedStash.SHA, change);
         }
 
         public void ClearSearchFilter()
@@ -282,6 +291,6 @@ namespace SourceGit.ViewModels
         private List<Models.Change> _changes = null;
         private List<Models.Change> _untracked = [];
         private List<Models.Change> _selectedChanges = [];
-        private DiffContext _diffContext = null;
+        private object _detailContext = null;
     }
 }

@@ -24,8 +24,21 @@ build: ## Build the app (Debug)
 	$(DOTNET) build $(APP_PROJECT)
 
 .PHONY: run
-run: ## Build and run the GUI app
+run: ## Run last built GUI app
 	$(DOTNET) run --project $(APP_PROJECT)
+
+.PHONY: run-build
+run-build: ## Build and run the app (Debug)
+	$(MAKE) build
+	$(MAKE) run
+
+.PHONY: build-dev
+build-dev: ## Build a dev .app for local testing and print its exact sha-stamped version
+	@test -z "$$(git status --porcelain)" || echo "WARNING: uncommitted changes -> version will show -dirty instead of a clean commit sha; commit first for an unambiguous build"
+	$(MAKE) app
+	@# Version composition is canonical in src/SourceGit.csproj (GenVersionInfo); mirrored here for the summary line.
+	@tail=$$(git describe --abbrev=8 --dirty 2>/dev/null | sed -E 's/^v[0-9]{4}\.[0-9]+(-sk(\.[0-9]+)?)?//' | tr -d g); \
+	 echo "Dev build ready: build/SourceGit.app  (version v$(VERSION)$$tail)"
 
 .PHONY: test
 test: ## Run the test suite
@@ -71,7 +84,7 @@ release: ## Run checks, tag v<VERSION>, and build the release zip (tag stays loc
 	@echo "To publish: git push origin master v$(VERSION); gh release create v$(VERSION) build/sourcegit_$(VERSION).$(RUNTIME).zip --title v$(VERSION) --notes 'Fork release $(VERSION)'"
 
 .PHONY: install
-install: app ## Build and install SourceGit.app into /Applications (overwrites)
+install: ## Install built SourceGit.app into /Applications (overwrites)
 	rm -rf /Applications/SourceGit.app
 	cp -R build/SourceGit.app /Applications/
 	@echo "Installed /Applications/SourceGit.app ($(VERSION), $(RUNTIME)). Restart the app to pick it up."

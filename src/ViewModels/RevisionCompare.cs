@@ -71,17 +71,7 @@ namespace SourceGit.ViewModels
             set
             {
                 if (SetProperty(ref _selectedChanges, value))
-                {
-                    if (value is { Count: 1 })
-                    {
-                        var option = new Models.DiffOption(GetSHA(_startPoint), GetSHA(_endPoint), value[0]);
-                        DiffContext = new DiffContext(_repo.FullPath, option, _diffContext);
-                    }
-                    else
-                    {
-                        DiffContext = null;
-                    }
-                }
+                    UpdateDetail();
             }
         }
 
@@ -95,10 +85,10 @@ namespace SourceGit.ViewModels
             }
         }
 
-        public DiffContext DiffContext
+        public object DetailContext
         {
-            get => _diffContext;
-            private set => SetProperty(ref _diffContext, value);
+            get => _detailContext;
+            private set => SetProperty(ref _detailContext, value);
         }
 
         public RevisionCompare(Repository repo, Models.Commit startPoint, Models.Commit endPoint)
@@ -344,6 +334,28 @@ namespace SourceGit.ViewModels
 
                 VisibleChanges = visible;
             }
+
+            // The whole-set stack tracks the filtered list, but rebuilding it per keystroke would spawn
+            // a git diff per visible file; coalesce until typing pauses.
+            if (_selectedChanges is not { Count: > 0 })
+            {
+                _filterDebounce ??= new Debouncer(TimeSpan.FromMilliseconds(300), () =>
+                {
+                    if (_selectedChanges is not { Count: > 0 })
+                        UpdateDetail();
+                });
+                _filterDebounce.Trigger();
+            }
+        }
+
+        private void UpdateDetail()
+        {
+            DetailContext = MultipleDiffContext.BuildDetail(_repo.FullPath, MakeDiffOption, _selectedChanges, _visibleChanges, _detailContext);
+        }
+
+        private Models.DiffOption MakeDiffOption(Models.Change change)
+        {
+            return new Models.DiffOption(GetSHA(_startPoint), GetSHA(_endPoint), change);
         }
 
         private void Refresh()
@@ -371,10 +383,8 @@ namespace SourceGit.ViewModels
                     VisibleChanges = visible;
                     IsLoading = false;
 
-                    if (VisibleChanges.Count > 0)
-                        SelectedChanges = [VisibleChanges[0]];
-                    else
-                        SelectedChanges = [];
+                    // No auto-selected file: an empty selection shows the whole comparison as a stacked diff.
+                    SelectedChanges = [];
                 });
             });
         }
@@ -398,6 +408,7 @@ namespace SourceGit.ViewModels
         private List<Models.Change> _visibleChanges = null;
         private List<Models.Change> _selectedChanges = null;
         private string _searchFilter = string.Empty;
-        private DiffContext _diffContext = null;
+        private object _detailContext = null;
+        private Debouncer _filterDebounce = null;
     }
 }

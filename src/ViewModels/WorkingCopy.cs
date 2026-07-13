@@ -131,7 +131,19 @@ namespace SourceGit.ViewModels
 
                     VisibleUnstaged = GetVisibleChanges(_unstaged);
                     VisibleStaged = GetVisibleChanges(_staged);
-                    SelectedUnstaged = [];
+
+                    // Clearing a live selection rebuilds the detail once via the setter; with nothing
+                    // selected the whole-set stack would otherwise rebuild per keystroke (a git diff
+                    // per visible file), so coalesce until typing pauses.
+                    if (_selectedUnstaged is { Count: > 0 } || _selectedStaged is { Count: > 0 })
+                    {
+                        SelectedUnstaged = [];
+                    }
+                    else
+                    {
+                        _filterDebounce ??= new Debouncer(TimeSpan.FromMilliseconds(300), UpdateDetail);
+                        _filterDebounce.Trigger();
+                    }
                 }
             }
         }
@@ -724,19 +736,8 @@ namespace SourceGit.ViewModels
             return rs;
         }
 
-        public void RefreshDetail()
-        {
-            UpdateDetail();
-        }
-
         private void UpdateDetail()
         {
-            if (Preferences.Instance.UseContinuousDiff)
-            {
-                SetContinuousDetail();
-                return;
-            }
-
             if (_selectedUnstaged.Count == 1)
                 SetDetail(_selectedUnstaged[0], true);
             else if (_selectedUnstaged.Count > 1)
@@ -797,14 +798,10 @@ namespace SourceGit.ViewModels
             if (_isLoadingData)
                 return;
 
-            if (Preferences.Instance.UseContinuousDiff)
-            {
-                SetContinuousDetail();
-                return;
-            }
-
+            // A single selected file always shows its own diff. Continuous stacking is reserved
+            // for the whole-changeset overview shown when nothing specific is selected.
             if (change == null)
-                DetailContext = null;
+                SetContinuousDetail();
             else if (change.IsConflicted)
                 DetailContext = new Conflict(_repo, this, change);
             else
@@ -816,12 +813,6 @@ namespace SourceGit.ViewModels
             if (_isLoadingData)
                 return;
 
-            if (Preferences.Instance.UseContinuousDiff)
-            {
-                SetContinuousDetail();
-                return;
-            }
-
             // Selection order follows click order; keep the stack in list order.
             var sorted = new List<Models.Change>(changes);
             sorted.Sort((l, r) => Models.NumericSort.Compare(l.Path, r.Path));
@@ -830,7 +821,16 @@ namespace SourceGit.ViewModels
             foreach (var c in sorted)
                 files.Add((c, isUnstaged));
 
-            DetailContext = new MultipleDiffContext(this, files, _detailContext as MultipleDiffContext);
+            DetailContext = new MultipleDiffContext(CreateFileDiffDetail, files, _detailContext as MultipleDiffContext);
+        }
+
+        private object CreateFileDiffDetail(Models.Change change, bool isUnstaged, DiffContext previous)
+        {
+            if (change.IsConflicted)
+                return new Conflict(_repo, this, change);
+
+            // Ignore the global `UseFullTextDiff` preference so one toggle cannot materialize every stacked file.
+            return new DiffContext(_repo.FullPath, new Models.DiffOption(change, isUnstaged), previous, true);
         }
 
         private void SetContinuousDetail()
@@ -850,7 +850,7 @@ namespace SourceGit.ViewModels
                 return;
             }
 
-            DetailContext = new MultipleDiffContext(this, files, _detailContext as MultipleDiffContext);
+            DetailContext = new MultipleDiffContext(CreateFileDiffDetail, files, _detailContext as MultipleDiffContext);
         }
 
         private bool IsChanged(List<Models.Change> old, List<Models.Change> cur)
@@ -884,6 +884,7 @@ namespace SourceGit.ViewModels
         private List<Models.Change> _visibleStaged = [];
         private List<Models.Change> _selectedUnstaged = [];
         private List<Models.Change> _selectedStaged = [];
+        private Debouncer _filterDebounce = null;
         private object _detailContext = null;
         private string _filter = string.Empty;
         private string _commitMessage = string.Empty;

@@ -41,8 +41,8 @@ namespace SourceGit.ViewModels
                 {
                     _sharedData.ActiveTabIndex = value;
 
-                    if (value == 1 && DiffContext == null && _selectedChanges is { Count: 1 })
-                        DiffContext = new DiffContext(_repo.FullPath, new Models.DiffOption(_commit, _selectedChanges[0]));
+                    if (value == 1 && DetailContext == null)
+                        UpdateDetail();
                 }
             }
         }
@@ -102,19 +102,14 @@ namespace SourceGit.ViewModels
             set
             {
                 if (SetProperty(ref _selectedChanges, value))
-                {
-                    if (ActiveTabIndex != 1 || value is not { Count: 1 })
-                        DiffContext = null;
-                    else
-                        DiffContext = new DiffContext(_repo.FullPath, new Models.DiffOption(_commit, value[0]), _diffContext);
-                }
+                    UpdateDetail();
             }
         }
 
-        public DiffContext DiffContext
+        public object DetailContext
         {
-            get => _diffContext;
-            private set => SetProperty(ref _diffContext, value);
+            get => _detailContext;
+            private set => SetProperty(ref _detailContext, value);
         }
 
         public string SearchChangeFilter
@@ -479,7 +474,7 @@ namespace SourceGit.ViewModels
             {
                 Changes = [];
                 VisibleChanges = [];
-                SelectedChanges = null;
+                ResetSelection();
                 return;
             }
 
@@ -551,10 +546,8 @@ namespace SourceGit.ViewModels
                         Changes = changes;
                         VisibleChanges = visible;
 
-                        if (visible.Count == 0)
-                            SelectedChanges = null;
-                        else
-                            SelectedChanges = [VisibleChanges[0]];
+                        // No auto-selected file: an empty selection shows the whole commit as a stacked diff.
+                        ResetSelection();
                     });
                 }
             }, token);
@@ -628,6 +621,42 @@ namespace SourceGit.ViewModels
 
                 VisibleChanges = visible;
             }
+
+            // The whole-set stack tracks the filtered list, but rebuilding it per keystroke would spawn
+            // a git diff per visible file; coalesce until typing pauses.
+            if (_selectedChanges is not { Count: > 0 })
+            {
+                _filterDebounce ??= new Debouncer(TimeSpan.FromMilliseconds(300), () =>
+                {
+                    if (_selectedChanges is not { Count: > 0 })
+                        UpdateDetail();
+                });
+                _filterDebounce.Trigger();
+            }
+        }
+
+        private void ResetSelection()
+        {
+            // Setting null on an already-null selection raises no change event, so force the rebuild
+            // that keys the detail to the new commit.
+            var hadSelection = _selectedChanges is { Count: > 0 };
+            SelectedChanges = null;
+            if (!hadSelection)
+                UpdateDetail();
+        }
+
+        // Detail is lazy until the Changes tab (index 1) is visible.
+        private void UpdateDetail()
+        {
+            if (ActiveTabIndex != 1 || _commit == null)
+                DetailContext = null;
+            else
+                DetailContext = MultipleDiffContext.BuildDetail(_repo.FullPath, MakeDiffOption, _selectedChanges, _visibleChanges, _detailContext);
+        }
+
+        private Models.DiffOption MakeDiffOption(Models.Change change)
+        {
+            return new Models.DiffOption(_commit, change);
         }
 
         private void RefreshRevisionSearchSuggestion()
@@ -768,7 +797,8 @@ namespace SourceGit.ViewModels
         private List<Models.Change> _visibleChanges = [];
         private List<Models.Change> _selectedChanges = null;
         private string _searchChangeFilter = string.Empty;
-        private DiffContext _diffContext = null;
+        private object _detailContext = null;
+        private Debouncer _filterDebounce = null;
         private string _viewRevisionFilePath = string.Empty;
         private object _viewRevisionFileContent = null;
         private CancellationTokenSource _cancellationSource = null;

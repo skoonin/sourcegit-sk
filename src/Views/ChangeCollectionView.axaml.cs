@@ -33,6 +33,19 @@ namespace SourceGit.Views
     {
         protected override Type StyleKeyOverride => typeof(ListBox);
 
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            // Pressing blank space (not a row, not the scrollbar) clears the selection so the
+            // working-copy diff returns to the whole-changeset overview instead of staying on one file.
+            var source = e.Source as Visual;
+            var overRow = source?.FindAncestorOfType<ListBoxItem>(true);
+            var overScrollBar = source?.FindAncestorOfType<ScrollBar>(true);
+            if (overRow == null && overScrollBar == null && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+                SelectedItems?.Clear();
+
+            base.OnPointerPressed(e);
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             if (SelectedItems is [ViewModels.ChangeTreeNode node] && e.KeyModifiers == KeyModifiers.None)
