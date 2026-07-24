@@ -125,60 +125,28 @@ This document shows the translation status of each locale file in the repository
 
 </details>
 
-### ![el__GR](https://img.shields.io/badge/el__GR-96.20%25-yellow)
+### ![el__GR](https://img.shields.io/badge/el__GR-99.12%25-yellow)
 
 <details>
 <summary>Missing keys in el_GR.axaml</summary>
 
-- Text.Apply.Source
-- Text.Apply.Source.File
-- Text.Apply.Source.Clipboard
-- Text.Bisect.WaitingForCheckoutAnother
-- Text.Bisect.WaitingForFirstBad
-- Text.CheckoutDetached
-- Text.CheckoutDetached.Target
-- Text.CheckoutDetached.Warning
-- Text.Configure.Git.EnableRecursiveWhenAutoUpdatingSubmodules
-- Text.CopyAsPatch
-- Text.DeleteBranch.AskForRemote
-- Text.DeleteBranch.Force
 - Text.Diff.AndMoreFiles
-- Text.Diff.EmptyFile
 - Text.Diff.FilesCount
 - Text.Diff.FirstFile
 - Text.Diff.LargeDiffHint
 - Text.Diff.LastFile
 - Text.Diff.NextFile
 - Text.Diff.PrevFile
-- Text.FileModeChange
-- Text.FileModeChange.Deleted
-- Text.FileModeChange.Directory
-- Text.FileModeChange.Executable
-- Text.FileModeChange.New
-- Text.FileModeChange.Normal
-- Text.FileModeChange.Submodule
-- Text.FileModeChange.Symlink
-- Text.FileModeChange.Unknown
-- Text.GitFlow.Finish
-- Text.GitFlow.FinishWithRebase
-- Text.GitFlow.StartAt
-- Text.GitFlow.StartName
 - Text.Launcher.OpenOtherRepository
 - Text.Repository.Commits
-- Text.TagCM.Checkout
-- Text.TagCM.Merge
-- Text.UpdateSubmodules.Recursive
-- Text.WorkingCopy.AddToGitIgnore.UntrackedInSameFolder
 
 </details>
 
-### ![es__ES](https://img.shields.io/badge/es__ES-97.96%25-yellow)
+### ![es__ES](https://img.shields.io/badge/es__ES-99.12%25-yellow)
 
 <details>
 <summary>Missing keys in es_ES.axaml</summary>
 
-- Text.DeleteBranch.AskForRemote
-- Text.DeleteBranch.Force
 - Text.Diff.AndMoreFiles
 - Text.Diff.FilesCount
 - Text.Diff.FirstFile
@@ -186,18 +154,8 @@ This document shows the translation status of each locale file in the repository
 - Text.Diff.LastFile
 - Text.Diff.NextFile
 - Text.Diff.PrevFile
-- Text.FileModeChange
-- Text.FileModeChange.Deleted
-- Text.FileModeChange.Directory
-- Text.FileModeChange.Executable
-- Text.FileModeChange.New
-- Text.FileModeChange.Normal
-- Text.FileModeChange.Submodule
-- Text.FileModeChange.Symlink
-- Text.FileModeChange.Unknown
 - Text.Launcher.OpenOtherRepository
 - Text.Repository.Commits
-- Text.WorkingCopy.AddToGitIgnore.UntrackedInSameFolder
 
 </details>
 
@@ -1086,13 +1044,11 @@ This document shows the translation status of each locale file in the repository
 
 </details>
 
-### ![ru__RU](https://img.shields.io/badge/ru__RU-97.96%25-yellow)
+### ![ru__RU](https://img.shields.io/badge/ru__RU-99.12%25-yellow)
 
 <details>
 <summary>Missing keys in ru_RU.axaml</summary>
 
-- Text.DeleteBranch.AskForRemote
-- Text.DeleteBranch.Force
 - Text.Diff.AndMoreFiles
 - Text.Diff.FilesCount
 - Text.Diff.FirstFile
@@ -1100,18 +1056,8 @@ This document shows the translation status of each locale file in the repository
 - Text.Diff.LastFile
 - Text.Diff.NextFile
 - Text.Diff.PrevFile
-- Text.FileModeChange
-- Text.FileModeChange.Deleted
-- Text.FileModeChange.Directory
-- Text.FileModeChange.Executable
-- Text.FileModeChange.New
-- Text.FileModeChange.Normal
-- Text.FileModeChange.Submodule
-- Text.FileModeChange.Symlink
-- Text.FileModeChange.Unknown
 - Text.Launcher.OpenOtherRepository
 - Text.Repository.Commits
-- Text.WorkingCopy.AddToGitIgnore.UntrackedInSameFolder
 
 </details>
 
@@ -1857,12 +1803,11 @@ This document shows the translation status of each locale file in the repository
 
 </details>
 
-### ![zh__CN](https://img.shields.io/badge/zh__CN-99.03%25-yellow)
+### ![zh__CN](https://img.shields.io/badge/zh__CN-99.12%25-yellow)
 
 <details>
 <summary>Missing keys in zh_CN.axaml</summary>
 
-- Text.DeleteBranch.AskForRemote
 - Text.Diff.AndMoreFiles
 - Text.Diff.FilesCount
 - Text.Diff.FirstFile
@@ -1875,12 +1820,11 @@ This document shows the translation status of each locale file in the repository
 
 </details>
 
-### ![zh__TW](https://img.shields.io/badge/zh__TW-99.03%25-yellow)
+### ![zh__TW](https://img.shields.io/badge/zh__TW-99.12%25-yellow)
 
 <details>
 <summary>Missing keys in zh_TW.axaml</summary>
 
-- Text.DeleteBranch.AskForRemote
 - Text.Diff.AndMoreFiles
 - Text.Diff.FilesCount
 - Text.Diff.FirstFile
