@@ -374,7 +374,7 @@ namespace SourceGit.Views
                 }
                 else if (selected is Models.User user)
                 {
-                    var apply = user.ToString();
+                    var apply = user.ToString().EscapeForBRE();
                     repo.SearchCommitContext.Filter = apply;
                     TxtSearchCommitsBox.CaretIndex = apply.Length;
                 }
@@ -397,7 +397,7 @@ namespace SourceGit.Views
             }
             else if (ctx is Models.User user)
             {
-                var apply = user.ToString();
+                var apply = user.ToString().EscapeForBRE();
                 repo.SearchCommitContext.Filter = apply;
                 TxtSearchCommitsBox.CaretIndex = apply.Length;
             }
