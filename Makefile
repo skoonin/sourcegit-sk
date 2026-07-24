@@ -2,6 +2,10 @@
 # GitHub Actions are disabled in this repository; `make check` is the local CI gate.
 
 DOTNET ?= $(shell command -v dotnet 2>/dev/null || echo $(HOME)/.local/share/dotnet/dotnet)
+# Avalonia's build-time stats task writes to ~/Library/Application Support/AvaloniaUI;
+# that write fails in restricted/sandboxed environments and breaks the build. Opt out to
+# keep builds hermetic. Only affects build telemetry, not the app.
+export AVALONIA_TELEMETRY_OPTOUT := true
 # Lazy so only the app target shells out for the version.
 VERSION = $(shell cat VERSION)
 RUNTIME ?= osx-arm64
