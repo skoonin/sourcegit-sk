@@ -6,6 +6,16 @@
 [![latest](https://img.shields.io/github/v/release/sourcegit-scm/sourcegit.svg)](https://github.com/sourcegit-scm/sourcegit/releases/latest)
 [![downloads](https://img.shields.io/github/downloads/sourcegit-scm/sourcegit/total)](https://github.com/sourcegit-scm/sourcegit/releases)
 
+## Fork customizations (SourceGit-SK)
+
+This is a personal fork of [sourcegit-scm/sourcegit](https://github.com/sourcegit-scm/sourcegit) that tracks upstream and adds the changes below. These are specific to this fork and are not part of upstream SourceGit. See [CHANGELOG.md](CHANGELOG.md) for the full history.
+
+* **Stacked multi-file diff** across every change view (working copy, commit details, compare, revision compare, submodule compare, stashes): with no file selected the whole change set shows as one scrollable diff; selecting several files stacks those; selecting one shows a single file. Includes a shared toolbar, file navigation, and per-file context controls.
+* **Recent-commits block in the repository sidebar**, showing the full commit graph.
+* **Bracket tab switching**: Cmd+Shift+[ / Cmd+Shift+] on macOS (Ctrl+Shift on Windows/Linux) moves between tabs; the existing bindings still work.
+* **"Open Another Repository..."** entry in the repository switcher (Ctrl/Cmd+P) opens a folder picker for a repo not yet in the list.
+* **Fork versioning**: releases carry an `-sk` suffix (shown in the About dialog), and the update check points at this fork's releases instead of upstream's.
+
 ## Screenshots
 
 * Dark Theme
